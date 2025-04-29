@@ -1,0 +1,9 @@
+CRITICAL - 2025-03-15 12:07:33 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()

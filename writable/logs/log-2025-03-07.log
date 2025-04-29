@@ -1,0 +1,198 @@
+CRITICAL - 2025-03-07 09:19:49 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:21:59 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:46:57 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:47:09 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:47:40 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:48 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:51 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:52 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:52 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:53 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:53 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:53 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:50:53 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:50 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:53 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:53 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:54 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:55 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:56 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:56 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 09:54:56 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 147.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-03-07 11:18:25 --> Error: Call to a member function isValid() on null
+[Method: POST, Route: editar]
+in APPPATH/Controllers/ApiController.php on line 145.
+ 1 SYSTEMPATH/CodeIgniter.php(933): App\Controllers\ApiController->editarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()

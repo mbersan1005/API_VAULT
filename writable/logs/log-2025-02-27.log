@@ -1,0 +1,18 @@
+CRITICAL - 2025-02-27 12:21:57 --> Error: Call to a member function getName() on null
+[Method: PUT, Route: agregar]
+in APPPATH/Controllers/ApiController.php on line 75.
+ 1 SYSTEMPATH/CodeIgniter.php(933): APP\Controllers\ApiController->agregarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
+CRITICAL - 2025-02-27 12:22:03 --> Error: Call to a member function getName() on null
+[Method: PUT, Route: agregar]
+in APPPATH/Controllers/ApiController.php on line 75.
+ 1 SYSTEMPATH/CodeIgniter.php(933): APP\Controllers\ApiController->agregarArticulo()
+ 2 SYSTEMPATH/CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController()
+ 3 SYSTEMPATH/CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest()
+ 4 SYSTEMPATH/Boot.php(334): CodeIgniter\CodeIgniter->run()
+ 5 SYSTEMPATH/Boot.php(67): CodeIgniter\Boot::runCodeIgniter()
+ 6 FCPATH/index.php(62): CodeIgniter\Boot::bootWeb()
