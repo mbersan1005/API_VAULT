@@ -1022,5 +1022,40 @@ class ApiController extends BaseController
         return $nombre;
     }
 
+    public function actualizarGraficasJuegos(){
+
+        $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
+        $nombreArchivo = 'juegos_steam.json';
+        $archivoLocal = WRITEPATH . '../public/resources/json/' . $nombreArchivo;
+
+        helper('filesystem');
+
+        try {
+            
+            $jsonData = file_get_contents($apiUrl);
+
+            if ($jsonData === false) {
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'mensaje' => 'No se pudo obtener el JSON desde la API'
+                ]);
+            }
+
+            write_file($archivoLocal, $jsonData); 
+
+            return $this->response->setJSON([
+                'status' => 'ok',
+                'mensaje' => 'Archivo actualizado.',
+                'archivo' => $nombreArchivo]);
+
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'status' => 'error',
+                'mensaje' => 'Error al actualizar el archivo: ' . $e->getMessage()
+            ]);
+        }
+
+    }
+
 }   
 ?>

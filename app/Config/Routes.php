@@ -28,4 +28,4 @@ $routes->post('realizarBusqueda','ApiController::realizarBusqueda');
 $routes->post('realizarBusquedaDesarrolladoras','ApiController::realizarBusquedaDesarrolladoras');
 $routes->post('realizarBusquedaPublishers','ApiController::realizarBusquedaPublishers');
 $routes->get('obtenerAppId/(:any)', 'ApiController::obtenerAppId/$1');
-
+$routes->get('actualizarGraficasJuegos', 'ApiController::actualizarGraficasJuegos');
