@@ -877,7 +877,7 @@ class ApiController extends BaseController
     
             $imagen->move(WRITEPATH . '../public/resources/imagenes', $nombreOriginal, true);
             
-            $baseUrl = 'https://apirest.saicasl.eu/api1/api/public';
+            $baseUrl = 'https://api-vault.onrender.com';
             $rutaImagenFinal = $baseUrl . '/resources/imagenes/' . $nombreOriginal;
     
             $insertData = [
@@ -1018,7 +1018,7 @@ class ApiController extends BaseController
                     throw new \Exception('Error al mover la imagen al servidor.');
                 }
     
-                $baseUrl = 'https://apirest.saicasl.eu/api1/api/public';
+                $baseUrl = 'https://api-vault.onrender.com';
                 $rutaImagenFinal = $baseUrl . '/resources/imagenes/' . $nombreOriginal;
             } else {
                 $rutaImagenFinal = $juegoActual['imagen'];
