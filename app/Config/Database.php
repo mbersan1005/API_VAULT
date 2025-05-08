@@ -26,11 +26,11 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => '89.128.117.9',
-        'username'     => 'test',
-        'password'     => 'pp7856Mh',
-        'database'     => 'test',
-        'schema'       => 'VAULT',
+        'hostname'     => 'ep-red-boat-a2uvdug9-pooler.eu-central-1.aws.neon.tech', //89.128.117.9
+        'username'     => 'neondb_owner', //test
+        'password'     => 'npg_rCngBI5ezd1t', //pp7856Mh
+        'database'     => 'neondb', //test
+        'schema'       => 'vault', //VAULT
         'DBDriver'     => 'Postgre',
         'DBPrefix'     => '',
         'pConnect'     => false,
@@ -38,7 +38,7 @@ class Database extends Config
         'charset'      => 'utf8',
         //'DBCollat'     => 'utf8mb4_general_ci',
         'swapPre'      => '',
-        'encrypt'      => false,
+        'encrypt'      => true, //false
         'compress'     => false,
         'strictOn'     => false,
         'failover'     => [],

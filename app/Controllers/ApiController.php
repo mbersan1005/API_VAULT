@@ -18,8 +18,7 @@ class ApiController extends BaseController
 
     private $apiKeyValidator;
 
-    public function __construct()
-    {
+    public function __construct(){
         $this->apiKeyValidator = new ApiKeyValidator();
         $this->VideojuegoModelo = new VideojuegoModelo();
         $this->AdministradoresModelo = new AdministradoresModelo();
@@ -38,16 +37,24 @@ class ApiController extends BaseController
             return $resultadoValidacion;
         }
         
-        $juegos = $this->VideojuegoModelo->findAll();
+        try {
 
-        if (empty($juegos)) {
-            $data = ['mensaje' => 'No se encontraron videojuegos'];
-        } else {
-            $data = ['juegos' => $juegos];
+            $juegos = $this->VideojuegoModelo->findAll();
+
+            if (empty($juegos)) {
+                $data = ['mensaje' => 'No se encontraron videojuegos'];
+            } else {
+                $data = ['juegos' => $juegos];
+            }
+            
+            return $this->response->setJSON($data)->setStatusCode(200);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener juegos: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar los datos'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
 
     public function obtenerIdsJuegos_API(){
@@ -218,95 +225,128 @@ class ApiController extends BaseController
     }
 
     public function recibirDatosJuego($id){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $juego = $this->VideojuegoModelo->find($id);
-
-        if (empty($juego)) {
-            $data = ['mensaje' => 'No se encontró videojuego con ese ID'];
-        } else {
-            $data = ['juego' => $juego];
+    
+        try {
+            $juego = $this->VideojuegoModelo->find($id);
+    
+            if (!$juego) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontró videojuego con ese ID'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON(['juego' => $juego])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener el juego con ID ' . $id . ': ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar los datos del juego'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
-        
-    public function inicioSesion()
-    {
-        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
     
+    public function inicioSesion(){
+        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
     
-        $data = $this->request->getJSON(true) ?? [];
+        try {
+            $data = $this->request->getJSON(true) ?? [];
     
-        if (!isset($data['nombre']) || !isset($data['password']) || empty(trim($data['nombre'])) || empty(trim($data['password']))) {
-            return $this->response->setJSON(['mensaje' => 'Usuario o contraseña no proporcionados'])
-                                  ->setStatusCode(400);
+            $nombre = trim($data['nombre'] ?? '');
+            $password = trim($data['password'] ?? '');
+    
+            if ($nombre === '' || $password === '') {
+                return $this->response->setJSON([
+                    'mensaje' => 'Usuario o contraseña no proporcionados'
+                ])->setStatusCode(400);
+            }
+    
+            $administrador = $this->AdministradoresModelo->where('nombre', $nombre)->first();
+    
+            if (!$administrador) {
+                return $this->response->setJSON([
+                    'mensaje' => 'Usuario no encontrado'
+                ])->setStatusCode(404);
+            }
+    
+            if (!password_verify($password, $administrador['password'])) {
+                return $this->response->setJSON([
+                    'mensaje' => 'Contraseña incorrecta'
+                ])->setStatusCode(401);
+            }
+    
+            $fechaActual = Time::now('Europe/Madrid')->toDateTimeString();
+            $this->AdministradoresModelo->update($administrador['id'], [
+                'fecha_ultimo_login' => $fechaActual
+            ]);
+    
+            return $this->response->setJSON([
+                'mensaje' => 'Inicio de sesión exitoso',
+                'administrador' => [
+                    'id' => $administrador['id'],
+                    'nombre' => $administrador['nombre'],
+                    'fecha_creacion' => $administrador['fecha_creacion'],
+                    'fecha_ultimo_login' => $fechaActual,
+                ]
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error en inicioSesion: ' . $e->getMessage());
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error en el inicio de sesión'
+            ])->setStatusCode(500);
         }
-    
-        $nombre = trim($data['nombre']);
-        $password = trim($data['password']);
-    
-        $administrador = $this->AdministradoresModelo->where('nombre', $nombre)->first();
-    
-        if (!$administrador) {
-            return $this->response->setJSON(['mensaje' => 'Usuario no encontrado'])
-                                  ->setStatusCode(404);
-        }
-    
-        if (!password_verify($password, $administrador['password'])) {
-            return $this->response->setJSON(['mensaje' => 'Contraseña incorrecta'])
-                                  ->setStatusCode(401);
-        }
-    
-        $fechaActual = Time::now('Europe/Madrid')->toDateTimeString();
-        $this->AdministradoresModelo->update($administrador['id'], ['fecha_ultimo_login' => $fechaActual]);
-    
-        return $this->response->setJSON([
-            'mensaje' => 'Inicio de sesión exitoso',
-            'administrador' => [
-                'id' => $administrador['id'],
-                'nombre' => $administrador['nombre'],
-                'fecha_creacion' => $administrador['fecha_creacion'],
-                'fecha_ultimo_login' => $fechaActual 
-            ]
-        ]);
     }
     
     //TRUNCATE nombre_de_tu_tabla RESTART IDENTITY; RESETEAR AUTO INCREMENTAR
-
     public function actualizarDatosAPI(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $this->eliminarDatosActualizar();
-
-        $idsJuegos = $this->obtenerIdsJuegos_API();
-        $this->rellenarTablaVideojuegos($idsJuegos);
-        $this->rellenarTablaGeneros();
-        $this->rellenarTablaDesarrolladoras();
-        $this->rellenarTablaPlataformas();
-        $this->rellenarTablaPublishers();
-        $this->rellenarTablaTiendas();
-
-        return $this->response->setJSON(['status' => 'ok', 'mensaje' => 'Datos actualizados correctamente.']);
-
+    
+        try {
+            $db = \Config\Database::connect();
+            $db->transBegin();
+    
+            $this->eliminarDatosActualizar();
+    
+            $idsJuegos = $this->obtenerIdsJuegos_API();
+            $this->rellenarTablaVideojuegos($idsJuegos);
+            $this->rellenarTablaGeneros();
+            $this->rellenarTablaDesarrolladoras();
+            $this->rellenarTablaPlataformas();
+            $this->rellenarTablaPublishers();
+            $this->rellenarTablaTiendas();
+    
+            $db->transCommit();
+    
+            return $this->response->setJSON([
+                'status' => 'ok',
+                'mensaje' => 'Datos actualizados correctamente.'
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            if (isset($db)) {
+                $db->transRollback();
+            }
+    
+            log_message('error', 'Error al actualizar datos desde la API externa: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'No se pudo completar la actualización de datos.'
+            ])->setStatusCode(500);
+        }
     }
     
-    public function rellenarTablaGeneros()
-    {
+    public function rellenarTablaGeneros(){
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/genres";
         
@@ -348,8 +388,8 @@ class ApiController extends BaseController
     public function rellenarTablaDesarrolladoras(){
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/developers";
-        $totalPages = 25;
-        $pageSize = 40;
+        $totalPages = 1; //25
+        $pageSize = 40; //40
 
         $db = \Config\Database::connect();
         $db->transStart();
@@ -434,7 +474,7 @@ class ApiController extends BaseController
     public function rellenarTablaPublishers(){
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/publishers";
-        $totalPages = 25;
+        $totalPages = 1; //25
         $pageSize = 40;
 
         $db = \Config\Database::connect();
@@ -517,105 +557,150 @@ class ApiController extends BaseController
     }
     
     public function recibirGeneros(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
+    
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $generos = $this->GeneroModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
-
-        if (empty($generos)) {
-            $data = ['mensaje' => 'No se encontraron generos'];
-        } else {
-            $data = ['generos' => $generos];
+    
+        try {
+            $generos = $this->GeneroModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
+    
+            if (empty($generos)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron géneros'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'generos' => $generos
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener géneros: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar los géneros'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
-
+    
     public function recibirPlataformas(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
+    
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $plataformas = $this->PlataformaModelo->findAll();
-
-        if (empty($plataformas)) {
-            $data = ['mensaje' => 'No se encontraron plataformas'];
-        } else {
-            $data = ['plataformas' => $plataformas];
+    
+        try {
+            $plataformas = $this->PlataformaModelo->findAll();
+    
+            if (empty($plataformas)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron plataformas'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'plataformas' => $plataformas
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener plataformas: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar las plataformas'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
-
+    
     public function recibirTiendas(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
+    
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $tiendas = $this->TiendaModelo->findAll();
-
-        if (empty($tiendas)) {
-            $data = ['mensaje' => 'No se encontraron tiendas'];
-        } else {
-            $data = ['tiendas' => $tiendas];
+    
+        try {
+            $tiendas = $this->TiendaModelo->findAll();
+    
+            if (empty($tiendas)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron tiendas'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'tiendas' => $tiendas
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener tiendas: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar las tiendas'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
-
+    
     public function recibirDesarrolladoras(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
+    
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $desarrolladoras = $this->DesarrolladoraModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
-
-        if (empty($desarrolladoras)) {
-            $data = ['mensaje' => 'No se encontraron desarrolladoras'];
-        } else {
-            $data = ['desarrolladoras' => $desarrolladoras];
+    
+        try {
+            $desarrolladoras = $this->DesarrolladoraModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
+    
+            if (empty($desarrolladoras)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron desarrolladoras'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'desarrolladoras' => $desarrolladoras
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener desarrolladoras: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar las desarrolladoras'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
-
+    
     public function recibirPublishers(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
+    
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $publishers = $this->PublisherModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
-
-        if (empty($publishers)) {
-            $data = ['mensaje' => 'No se encontraron publishers'];
-        } else {
-            $data = ['publishers' => $publishers];
+    
+        try {
+            $publishers = $this->PublisherModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
+    
+            if (empty($publishers)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron publishers'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'publishers' => $publishers
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener publishers: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar los publishers'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
-
+    
     /*
     SELECT * 
     FROM vault.videojuegos
@@ -629,7 +714,7 @@ class ApiController extends BaseController
     public function recibirJuegosFiltrados($categoria, $nombre)
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-    
+        
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
@@ -637,154 +722,232 @@ class ApiController extends BaseController
         $columnasPermitidas = ['generos', 'tiendas', 'publishers', 'desarrolladoras', 'plataformas_principales'];
     
         if (!in_array($categoria, $columnasPermitidas)) {
-            return $this->response->setJSON(['mensaje' => 'Categoría no válida']);
+            return $this->response->setJSON(['mensaje' => 'Categoría no válida'])
+                                  ->setStatusCode(400);
         }
     
-        $db = \Config\Database::connect();  
+        try {
+            $db = \Config\Database::connect();
     
-        $query = "
-            SELECT * 
-            FROM vault.videojuegos
-            WHERE EXISTS (
-                SELECT 1
-                FROM jsonb_array_elements($categoria) AS item
-                WHERE LOWER(item->>'nombre') LIKE LOWER(?)
-            )
-            ORDER BY nombre ASC
-        ";
+            $query = "
+                SELECT * 
+                FROM vault.videojuegos
+                WHERE EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements($categoria) AS item
+                    WHERE LOWER(item->>'nombre') LIKE LOWER(?)
+                )
+                ORDER BY nombre ASC
+            ";
     
-        $result = $db->query($query, ['%' . $nombre . '%'])->getResult();
+            $result = $db->query($query, ['%' . $nombre . '%'])->getResult();
     
-        if (empty($result)) {
-            return $this->response->setJSON(['mensaje' => 'No se encontraron videojuegos con esa categoria o nombre']);
-        } else {
-            return $this->response->setJSON(['juegosFiltrados' => $result]);
+            if (empty($result)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron videojuegos con esa categoría o nombre'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'juegosFiltrados' => $result
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener juegos filtrados: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar los juegos filtrados'
+            ])->setStatusCode(500);
         }
     }
     
     public function eliminarJuego(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
     
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-
+    
         $json = $this->request->getJSON();
         $id = $json->id ?? null;
-
+    
         if (!$id) {
-            return $this->response->setJSON(['mensaje' => 'ID del juego no proporcionado']);
+            return $this->response->setJSON(['mensaje' => 'ID del juego no proporcionado'])
+                                  ->setStatusCode(400); 
         }
-
+    
         $juego = $this->VideojuegoModelo->find($id);
-
+    
         if (!$juego) {
-            return $this->response->setJSON(['mensaje' => 'Juego no encontrado']);
-        }
-
-        $this->VideojuegoModelo->delete($id);
-
-        return $this->response->setJSON([
-            'success' => true,
-            'mensaje' => 'Juego eliminado correctamente'
-        ]);
-    }
-    
-    public function obtenerDatosFormulario(){
-
-        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-    
-        if ($resultadoValidacion !== true) {
-            return $resultadoValidacion;
-        }
-
-        $tiendas = $this->TiendaModelo->findAll();
-        $plataformas = $this->PlataformaModelo->findAll();
-        $generos = $this->GeneroModelo->findAll();
-        $desarrolladoras = $this->DesarrolladoraModelo->findAll();
-        $publishers = $this->PublisherModelo->findAll();
-
-        $response = [
-            'tiendas' => $tiendas,
-            'plataformas' => $plataformas,
-            'generos' => $generos,
-            'desarrolladoras' => $desarrolladoras,
-            'publishers' => $publishers
-        ];
-
-        return $this->response->setJSON($response); 
-
-    }
-
-    public function agregarJuego() {
-        
-        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-    
-        if ($resultadoValidacion !== true) {
-            return $resultadoValidacion;
-        }
-    
-        $data = $this->request->getJSON(true); 
-    
-        if (empty($data['nombre']) || empty($data['descripcion']) || empty($data['fecha_lanzamiento'])) {
-            return $this->response->setJSON(['mensaje' => 'Faltan campos obligatorios', 'datos_recibidos' => $data]);
-        }
-    
-        if (empty($data['tiendas']) || empty($data['plataformas']) || empty($data['generos']) || empty($data['desarrolladoras']) || empty($data['publishers'])) {
-            return $this->response->setJSON([
-                'mensaje' => 'Debe seleccionar al menos una tienda, plataforma, género, desarrolladora y publisher',
-                'datos_recibidos' => $data
-            ]);
+            return $this->response->setJSON(['mensaje' => 'Juego no encontrado'])
+                                  ->setStatusCode(404); 
         }
     
         try {
-            $data['nota_metacritic'] = isset($data['nota_metacritic']) && $data['nota_metacritic'] !== '' ? $data['nota_metacritic'] : null;
-            $data['sitio_web'] = isset($data['sitio_web']) && $data['sitio_web'] !== '' ? $data['sitio_web'] : null;
+            $this->VideojuegoModelo->delete($id);
     
-            $data['plataformas_principales'] = json_encode($data['plataformas']);
-            $data['tiendas'] = json_encode($data['tiendas']);
-            $data['generos'] = json_encode($data['generos']);
-            $data['desarrolladoras'] = json_encode($data['desarrolladoras']);
-            $data['publishers'] = json_encode($data['publishers']);
-    
-            unset($data['plataformas']); 
-    
-            $data['creado_por_admin'] = 1;
-    
-            $juegoId = $this->VideojuegoModelo->insert($data);
-            if ($juegoId) {
-                return $this->response->setJSON(['mensaje' => 'Juego agregado correctamente']);
-            } else {
-                return $this->response->setJSON(['mensaje' => 'Error al agregar el juego', 'datos' => $data]);
-            }
+            return $this->response->setJSON([
+                'success' => true,
+                'mensaje' => 'Juego eliminado correctamente'
+            ])->setStatusCode(200); 
+
         } catch (\Exception $e) {
-            return $this->response->setJSON(['mensaje' => 'Error al agregar el juego: ' . $e->getMessage()]);
+            log_message('error', 'Error al eliminar juego: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al eliminar el juego'
+            ])->setStatusCode(500);  
+        }
+    }
+    
+    public function obtenerDatosFormulario(){
+        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
+        
+        if ($resultadoValidacion !== true) {
+            return $resultadoValidacion;
+        }
+    
+        try {
+            $tiendas = $this->TiendaModelo->findAll();
+            $plataformas = $this->PlataformaModelo->findAll();
+            $generos = $this->GeneroModelo->findAll();
+            $desarrolladoras = $this->DesarrolladoraModelo->findAll();
+            $publishers = $this->PublisherModelo->findAll();
+    
+            $response = [
+                'tiendas' => $tiendas,
+                'plataformas' => $plataformas,
+                'generos' => $generos,
+                'desarrolladoras' => $desarrolladoras,
+                'publishers' => $publishers
+            ];
+    
+            return $this->response->setJSON($response);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener datos del formulario: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al obtener los datos',
+                'mensaje' => $e->getMessage()
+            ])->setStatusCode(500);
+        }
+    }
+    
+    public function agregarJuego(){
+        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
+    
+        if ($resultadoValidacion !== true) {
+            return $resultadoValidacion;
+        }
+    
+        $datos = $this->request->getPost();
+        $imagen = $this->request->getFile('imagen');
+    
+        if (
+            empty($datos['nombre']) || empty($datos['descripcion']) || empty($datos['fecha_lanzamiento']) ||
+            empty($datos['tiendas']) || empty($datos['plataformas']) || empty($datos['generos']) ||
+            empty($datos['desarrolladoras']) || empty($datos['publishers'])
+        ) {
+            return $this->response->setJSON([
+                'mensaje' => 'Faltan campos obligatorios o listas vacías',
+                'datos_recibidos' => $datos
+            ])->setStatusCode(400);
+        }
+    
+        if (!$imagen || !$imagen->isValid() || $imagen->hasMoved()) {
+            return $this->response->setJSON([
+                'mensaje' => 'La imagen es obligatoria y debe ser válida'
+            ])->setStatusCode(400); 
+        }
+    
+        $extensionesPermitidas = ['jpg', 'jpeg', 'png'];
+        if (!in_array(strtolower($imagen->getExtension()), $extensionesPermitidas)) {
+            return $this->response->setJSON(['mensaje' => 'Solo se permiten imágenes en formato JPG o PNG.'])
+                                  ->setStatusCode(400); 
+        }
+    
+        try {
+            $nombreOriginal = basename($imagen->getClientName());
+            $rutaDestino = WRITEPATH . '../public/resources/imagenes/' . $nombreOriginal;
+            
+            if (is_file($rutaDestino)) {
+                unlink($rutaDestino);
+            }
+    
+            $imagen->move(WRITEPATH . '../public/resources/imagenes', $nombreOriginal, true);
+            
+            $baseUrl = 'https://apirest.saicasl.eu/api1/api/public';
+            $rutaImagenFinal = $baseUrl . '/resources/imagenes/' . $nombreOriginal;
+    
+            $insertData = [
+                'nombre' => $datos['nombre'],
+                'nota_metacritic' => $datos['nota_metacritic'] ?? null,
+                'fecha_lanzamiento' => $datos['fecha_lanzamiento'],
+                'sitio_web' => $datos['sitio_web'] ?? null,
+                'imagen' => $rutaImagenFinal,
+                'plataformas_principales' => $datos['plataformas'],
+                'desarrolladoras' => $datos['desarrolladoras'], 
+                'publishers' => $datos['publishers'],            
+                'tiendas' => $datos['tiendas'],            
+                'generos' => $datos['generos'],
+                'descripcion' => $datos['descripcion'],
+                'creado_por_admin' => 1
+            ];
+    
+            $db = \Config\Database::connect();
+            $db->transBegin();
+    
+            $juegoId = $this->VideojuegoModelo->insert($insertData);
+    
+            if ($juegoId) {
+                $db->transCommit();
+                return $this->response->setJSON(['mensaje' => 'Juego agregado correctamente'])
+                                      ->setStatusCode(201); 
+            } else {
+                $db->transRollback();
+                return $this->response->setJSON(['mensaje' => 'Error al agregar el juego', 'datos' => $insertData])
+                                      ->setStatusCode(500); 
+            }
+    
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return $this->response->setJSON(['mensaje' => 'Error al agregar el juego: ' . $e->getMessage()])
+                                  ->setStatusCode(500); 
         }
     }
     
     public function crearAdministrador() {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-    
+        
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
     
-        $nombre = $this->request->getJSON()->nombre;
-        $password = $this->request->getJSON()->password;        
-        
+        $datos = $this->request->getJSON(true); 
+        $nombre = $datos['nombre'] ?? null;
+        $password = $datos['password'] ?? null;
+    
         if (empty($nombre)) {
             return $this->response->setJSON([
                 'mensaje' => 'El nombre no puede estar vacío',
                 'datos' => []
-            ]);
+            ])->setStatusCode(400); 
         }
     
         if (empty($password)) {
             return $this->response->setJSON([
                 'mensaje' => 'La contraseña no puede estar vacía',
                 'datos' => []
-            ]);
+            ])->setStatusCode(400); 
+        }
+
+        $adminExistente = $this->AdministradoresModelo->where('nombre', $nombre)->first();
+        if ($adminExistente) {
+            return $this->response->setJSON([
+                'mensaje' => 'Ya existe un administrador con ese nombre',
+                'datos' => []
+            ])->setStatusCode(409); 
         }
     
         $passwordCifrada = password_hash($password, PASSWORD_DEFAULT);
@@ -797,51 +960,102 @@ class ApiController extends BaseController
             'fecha_ultimo_login' => $fechaActual
         ];
     
-        $inserted = $this->AdministradoresModelo->insert($data);
-        
-        if (!$inserted) {
-            return $this->response->setJSON([
-                'mensaje' => 'Error al insertar el administrador en la base de datos',
-                'datos' => []
-            ]);
-        }
+        $db = \Config\Database::connect();
+        $db->transBegin(); 
     
-        return $this->response->setJSON([
-            'mensaje' => 'Cuenta de administrador creada correctamente',
-            'datos' => $data
-        ]);
+        try {
+            $inserted = $this->AdministradoresModelo->insert($data);
+    
+            if (!$inserted) {
+                throw new \Exception("Error al insertar el administrador en la base de datos");
+            }
+    
+            $db->transCommit();
+    
+            return $this->response->setJSON([
+                'mensaje' => 'Cuenta de administrador creada correctamente',
+                'datos' => $data
+            ])->setStatusCode(201); 
+    
+        } catch (\Exception $e) {
+            $db->transRollback();
+            
+            return $this->response->setJSON([
+                'mensaje' => 'Error al crear el administrador: ' . $e->getMessage(),
+                'datos' => []
+            ])->setStatusCode(500);
+        }
     }
     
     public function editarJuego(){
-        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
         
+        $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
     
-        $data = $this->request->getJSON();
+        $datos = $this->request->getPost();
+        $imagen = $this->request->getFile('imagen');
     
-        $updateData = [
-            'nombre' => $data->nombre,
-            'nota_metacritic' => $data->nota_metacritic,
-            'fecha_lanzamiento' => $data->fecha_lanzamiento,
-            'sitio_web' => $data->sitio_web,
-            'imagen' => $data->imagen,
-            'plataformas_principales' => json_encode($data->plataformas_principales),
-            'desarrolladoras' => json_encode($data->desarrolladoras),
-            'publishers' => json_encode($data->publishers),
-            'tiendas' => json_encode($data->tiendas),
-            'generos' => json_encode($data->generos),
-            'descripcion' => $data->descripcion,
-            'creado_por_admin' => 1  
-        ];
+        $juegoActual = $this->VideojuegoModelo->find($datos['id']);
+        if (!$juegoActual) {
+            return $this->response->setJSON(['mensaje' => 'Juego no encontrado.'])->setStatusCode(404);
+        }
     
-        $this->VideojuegoModelo->update($data->id, $updateData);
+        $db = \Config\Database::connect();
+        $db->transBegin(); 
     
-        return $this->response->setJSON([
-            'mensaje' => 'Juego actualizado correctamente.',
-            'datos' => $updateData
-        ]);
+        try {
+            if ($imagen && $imagen->isValid() && !$imagen->hasMoved()) {
+                $nombreOriginal = basename($imagen->getClientName());
+                $rutaDestino = WRITEPATH . '../public/resources/imagenes/' . $nombreOriginal;
+    
+                if (is_file($rutaDestino)) {
+                    unlink($rutaDestino);
+                }
+    
+                if (!$imagen->move(WRITEPATH . '../public/resources/imagenes', $nombreOriginal, true)) {
+                    throw new \Exception('Error al mover la imagen al servidor.');
+                }
+    
+                $baseUrl = 'https://apirest.saicasl.eu/api1/api/public';
+                $rutaImagenFinal = $baseUrl . '/resources/imagenes/' . $nombreOriginal;
+            } else {
+                $rutaImagenFinal = $juegoActual['imagen'];
+            }
+    
+            $updateData = [
+                'nombre' => $datos['nombre'] ?? $juegoActual['nombre'],
+                'nota_metacritic' => $datos['nota_metacritic'] ?? $juegoActual['nota_metacritic'],
+                'fecha_lanzamiento' => $datos['fecha_lanzamiento'] ?? $juegoActual['fecha_lanzamiento'],
+                'sitio_web' => $datos['sitio_web'] ?? $juegoActual['sitio_web'],
+                'imagen' => $rutaImagenFinal,
+                'plataformas_principales' => $datos['plataformas'] ?? $juegoActual['plataformas_principales'],
+                'desarrolladoras' => $datos['desarrolladoras'] ?? $juegoActual['desarrolladoras'],
+                'publishers' => $datos['publishers'] ?? $juegoActual['publishers'],
+                'tiendas' => $datos['tiendas'] ?? $juegoActual['tiendas'],
+                'generos' => $datos['generos'] ?? $juegoActual['generos'],
+                'descripcion' => $datos['descripcion'] ?? $juegoActual['descripcion'],
+                'creado_por_admin' => 1
+            ];
+    
+            $actualizado = $this->VideojuegoModelo->update($datos['id'], $updateData);
+    
+            if ($actualizado) {
+                $db->transCommit();
+                return $this->response->setJSON([
+                    'mensaje' => 'Juego actualizado correctamente.',
+                    'datos' => $updateData
+                ])->setStatusCode(200); 
+            } else {
+                throw new \Exception('Error al actualizar el juego.');
+            }
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return $this->response->setJSON([
+                'mensaje' => 'Error al actualizar el juego: ' . $e->getMessage()
+            ])->setStatusCode(500); 
+        }
     }
     
     public function eliminarDatosActualizar(){
@@ -862,63 +1076,87 @@ class ApiController extends BaseController
     }
     
     public function recibirJuegosAdmin(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
+    
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $juegos = $this->VideojuegoModelo->select('nombre')->where('creado_por_admin', 1)->findAll();
-
-        if (empty($juegos)) {
-            $data = ['mensaje' => 'No se encontraron videojuegos'];
-        } else {
-            $data = ['juegos' => $juegos];
+    
+        try {
+            $juegos = $this->VideojuegoModelo->select('nombre')->where('creado_por_admin', 1)->findAll();
+    
+            if (empty($juegos)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron videojuegos creados por administradores'
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'juegos' => $juegos
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener juegos administrados: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al recuperar los videojuegos creados por los administradores'
+            ])->setStatusCode(500);
         }
-        
-        return $this->response->setJSON($data);
-
     }
-
+    
     public function purgarDatos(){
-        
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
-
+    
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-        
-        $this->eliminarDatosPurgar();
-
-        $idsJuegos = $this->obtenerIdsJuegos_API();
-        $this->rellenarTablaVideojuegos($idsJuegos);
-        
-        $this->rellenarTablaGeneros();
-        $this->rellenarTablaDesarrolladoras();
-        $this->rellenarTablaPlataformas();
-        $this->rellenarTablaPublishers();
-        $this->rellenarTablaTiendas();
-        
-        return $this->response->setJSON(['status' => 'ok', 'mensaje' => 'Datos purgados correctamente.']);
-
+    
+        try {
+            $this->eliminarDatosPurgar();
+    
+            $idsJuegos = $this->obtenerIdsJuegos_API();
+            $this->rellenarTablaVideojuegos($idsJuegos);
+    
+            $this->rellenarTablaGeneros();
+            $this->rellenarTablaDesarrolladoras();
+            $this->rellenarTablaPlataformas();
+            $this->rellenarTablaPublishers();
+            $this->rellenarTablaTiendas();
+    
+            return $this->response->setJSON([
+                'mensaje' => 'Datos purgados correctamente.'
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error en purgarDatos: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Error al purgar y recargar los datos.'
+            ])->setStatusCode(500);
+        }
     }
-
+    
     public function eliminarDatosPurgar(){
         $db = \Config\Database::connect();
-        $db->transStart();
     
-        $db->query('TRUNCATE TABLE vault.videojuegos RESTART IDENTITY CASCADE;');
-        
-        $db->query('TRUNCATE TABLE vault.generos RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.desarrolladoras RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.plataformas RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.publishers RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.tiendas RESTART IDENTITY CASCADE;');
-        
-        $db->transComplete();
+        try {
+            $db->transStart();
+    
+            $db->query('TRUNCATE TABLE vault.videojuegos RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.generos RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.desarrolladoras RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.plataformas RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.publishers RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.tiendas RESTART IDENTITY CASCADE;');
+    
+            $db->transComplete();
+    
+        } catch (\Exception $e) {
+            $db->transRollback();
+            throw $e;
+        }
     }
-
+    
     public function realizarBusqueda(){
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
     
@@ -926,20 +1164,39 @@ class ApiController extends BaseController
             return $resultadoValidacion;
         }
     
-        $data = $this->request->getJSON(true) ?? [];
-        $nombre = $data['nombre'] ?? '';
+        try {
+            $data = $this->request->getJSON(true) ?? [];
+            $nombre = trim($data['nombre'] ?? '');
     
-        if (empty($nombre)) {
-            return $this->response->setJSON(['juegos' => []]);
+            if ($nombre === '') {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se proporcionó ningún término de búsqueda',
+                    'juegos' => []
+                ])->setStatusCode(400);
+            }
+    
+            $juegos = $this->VideojuegoModelo
+                ->like('LOWER(nombre)', strtolower($nombre))
+                ->findAll();
+    
+            if (empty($juegos)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron juegos que coincidan',
+                    'juegos' => []
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON(['juegos' => $juegos])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al realizar la búsqueda: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al realizar la búsqueda'
+            ])->setStatusCode(500);
         }
-    
-        $juegos = $this->VideojuegoModelo
-            ->like('LOWER(nombre)', strtolower($nombre))
-            ->findAll();
-    
-        return $this->response->setJSON(['juegos' => $juegos]);
     }
-
+    
     public function realizarBusquedaDesarrolladoras(){
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
     
@@ -947,20 +1204,41 @@ class ApiController extends BaseController
             return $resultadoValidacion;
         }
     
-        $data = $this->request->getJSON(true) ?? [];
-        $nombre = $data['nombre'] ?? '';
+        try {
+            $data = $this->request->getJSON(true) ?? [];
+            $nombre = trim($data['nombre'] ?? '');
     
-        if (empty($nombre)) {
-            return $this->response->setJSON(['desarrolladoras' => []]);
+            if ($nombre === '') {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se proporcionó ningún término de búsqueda',
+                    'desarrolladoras' => []
+                ])->setStatusCode(400);
+            }
+    
+            $desarrolladoras = $this->DesarrolladoraModelo
+                ->like('LOWER(nombre)', strtolower($nombre))
+                ->findAll();
+    
+            if (empty($desarrolladoras)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron desarrolladoras que coincidan',
+                    'desarrolladoras' => []
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'desarrolladoras' => $desarrolladoras
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al buscar desarrolladoras: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al realizar la búsqueda'
+            ])->setStatusCode(500);
         }
-    
-        $juegos = $this->DesarrolladoraModelo
-            ->like('LOWER(nombre)', strtolower($nombre))
-            ->findAll();
-    
-        return $this->response->setJSON(['desarrolladoras' => $juegos]);
     }
-
+    
     public function realizarBusquedaPublishers(){
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
     
@@ -968,54 +1246,89 @@ class ApiController extends BaseController
             return $resultadoValidacion;
         }
     
-        $data = $this->request->getJSON(true) ?? [];
-        $nombre = $data['nombre'] ?? '';
+        try {
+            $data = $this->request->getJSON(true) ?? [];
+            $nombre = trim($data['nombre'] ?? '');
     
-        if (empty($nombre)) {
-            return $this->response->setJSON(['publishers' => []]);
+            if ($nombre === '') {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se proporcionó ningún término de búsqueda',
+                    'publishers' => []
+                ])->setStatusCode(400);
+            }
+    
+            $publishers = $this->PublisherModelo
+                ->like('LOWER(nombre)', strtolower($nombre))
+                ->findAll();
+    
+            if (empty($publishers)) {
+                return $this->response->setJSON([
+                    'mensaje' => 'No se encontraron publishers que coincidan',
+                    'publishers' => []
+                ])->setStatusCode(404);
+            }
+    
+            return $this->response->setJSON([
+                'publishers' => $publishers
+            ])->setStatusCode(200);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al buscar publishers: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al realizar la búsqueda'
+            ])->setStatusCode(500);
         }
-    
-        $juegos = $this->PublisherModelo
-            ->like('LOWER(nombre)', strtolower($nombre))
-            ->findAll();
-    
-        return $this->response->setJSON(['publishers' => $juegos]);
     }
     
-    public function obtenerAppId($nombreJuego)
-    {
-        $rutaJson = FCPATH . 'resources/json/juegos_steam.json';
     
-        if (!file_exists($rutaJson)) {
-            return $this->response->setJSON(['error' => 'Archivo JSON no encontrado.']);
-        }
+    public function obtenerAppId($nombreJuego){
+        try {
+            $rutaJson = FCPATH . 'resources/json/juegos_steam.json';
     
-        $contenido = file_get_contents($rutaJson);
-        $json = json_decode($contenido, true);
-    
-        if (!$json || !isset($json['applist']['apps'])) {
-            return $this->response->setJSON(['error' => 'Estructura del JSON no válida.']);
-        }
-    
-        $apps = $json['applist']['apps'];
-        $nombreJuegoBuscado = $this->normalizarNombre($nombreJuego);
-    
-        foreach ($apps as $app) {
-            $nombreJuegoActual = $this->normalizarNombre($app['name'] ?? '');
-    
-            if ($nombreJuegoBuscado === $nombreJuegoActual) {
-                return $this->response->setJSON(['appid' => $app['appid']]);
+            if (!file_exists($rutaJson)) {
+                return $this->response->setJSON([
+                    'error' => 'Archivo JSON no encontrado.'
+                ])->setStatusCode(404);
             }
-        }
     
-        return $this->response->setJSON([
-            'mensaje' => 'Juego no encontrado',
-            'appid' => null
-        ]);
+            $contenido = file_get_contents($rutaJson);
+            $json = json_decode($contenido, true);
+    
+            if (!$json || !isset($json['applist']['apps'])) {
+                return $this->response->setJSON([
+                    'error' => 'Estructura del JSON no válida.'
+                ])->setStatusCode(500);
+            }
+    
+            $apps = $json['applist']['apps'];
+            $nombreJuegoBuscado = $this->normalizarNombre($nombreJuego);
+    
+            foreach ($apps as $app) {
+                $nombreJuegoActual = $this->normalizarNombre($app['name'] ?? '');
+    
+                if ($nombreJuegoBuscado === $nombreJuegoActual) {
+                    return $this->response->setJSON([
+                        'appid' => $app['appid']
+                    ])->setStatusCode(200);
+                }
+            }
+    
+            return $this->response->setJSON([
+                'mensaje' => 'Juego no encontrado',
+                'appid' => null
+            ])->setStatusCode(404);
+    
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener AppID: ' . $e->getMessage());
+    
+            return $this->response->setJSON([
+                'error' => 'Ocurrió un error al buscar el AppID.'
+            ])->setStatusCode(500);
+        }
     }
 
-    private function normalizarNombre($nombre)
-    {
+    private function normalizarNombre($nombre){
         $nombre = urldecode($nombre);
         $nombre = trim(strtolower($nombre));
         $nombre = preg_replace('/\s+/', ' ', $nombre);
@@ -1023,39 +1336,44 @@ class ApiController extends BaseController
     }
 
     public function actualizarGraficasJuegos(){
-
         $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
         $nombreArchivo = 'juegos_steam.json';
         $archivoLocal = WRITEPATH . '../public/resources/json/' . $nombreArchivo;
-
+    
         helper('filesystem');
-
+    
         try {
-            
-            $jsonData = file_get_contents($apiUrl);
-
+            $jsonData = @file_get_contents($apiUrl);
+    
             if ($jsonData === false) {
+                log_message('error', 'No se pudo obtener el JSON desde Steam API.');
                 return $this->response->setJSON([
                     'status' => 'error',
                     'mensaje' => 'No se pudo obtener el JSON desde la API'
-                ]);
+                ])->setStatusCode(502);
             }
-
-            write_file($archivoLocal, $jsonData); 
-
+    
+            if (!write_file($archivoLocal, $jsonData)) {
+                log_message('error', 'No se pudo escribir el archivo JSON en el servidor.');
+                return $this->response->setJSON([
+                    'status' => 'error',
+                    'mensaje' => 'No se pudo guardar el archivo JSON localmente'
+                ])->setStatusCode(500);
+            }
+    
             return $this->response->setJSON([
                 'status' => 'ok',
                 'mensaje' => 'Archivo actualizado.',
-                'archivo' => $nombreArchivo]);
-
+                'archivo' => $nombreArchivo
+            ])->setStatusCode(200);
+    
         } catch (\Exception $e) {
+            log_message('error', 'Excepción al actualizar archivo JSON: ' . $e->getMessage());
             return $this->response->setJSON([
                 'status' => 'error',
                 'mensaje' => 'Error al actualizar el archivo: ' . $e->getMessage()
-            ]);
+            ])->setStatusCode(500);
         }
-
-    }
-
+    }    
 }   
 ?>
