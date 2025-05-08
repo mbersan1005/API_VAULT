@@ -1327,53 +1327,11 @@ class ApiController extends BaseController
         }
     }
     
-
     private function normalizarNombre($nombre){
         $nombre = urldecode($nombre);
         $nombre = trim(strtolower($nombre));
         $nombre = preg_replace('/\s+/', ' ', $nombre);
         return $nombre;
     }
-
-    public function actualizarGraficasJuegos(){
-        $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
-        $nombreArchivo = 'juegos_steam.json';
-        $archivoLocal = WRITEPATH . '../public/resources/json/' . $nombreArchivo;
-    
-        helper('filesystem');
-    
-        try {
-            $jsonData = @file_get_contents($apiUrl);
-    
-            if ($jsonData === false) {
-                log_message('error', 'No se pudo obtener el JSON desde Steam API.');
-                return $this->response->setJSON([
-                    'status' => 'error',
-                    'mensaje' => 'No se pudo obtener el JSON desde la API'
-                ])->setStatusCode(502);
-            }
-    
-            if (!write_file($archivoLocal, $jsonData)) {
-                log_message('error', 'No se pudo escribir el archivo JSON en el servidor.');
-                return $this->response->setJSON([
-                    'status' => 'error',
-                    'mensaje' => 'No se pudo guardar el archivo JSON localmente'
-                ])->setStatusCode(500);
-            }
-    
-            return $this->response->setJSON([
-                'status' => 'ok',
-                'mensaje' => 'Archivo actualizado.',
-                'archivo' => $nombreArchivo
-            ])->setStatusCode(200);
-    
-        } catch (\Exception $e) {
-            log_message('error', 'Excepción al actualizar archivo JSON: ' . $e->getMessage());
-            return $this->response->setJSON([
-                'status' => 'error',
-                'mensaje' => 'Error al actualizar el archivo: ' . $e->getMessage()
-            ])->setStatusCode(500);
-        }
-    }    
 }   
 ?>
