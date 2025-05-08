@@ -1281,23 +1281,22 @@ class ApiController extends BaseController
         }
     }
     
-    
-    public function obtenerAppId($nombreJuego){
+    public function obtenerAppId($nombreJuego) {
         try {
-            $rutaJson = FCPATH . 'resources/json/juegos_steam.json';
+            $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
+            $response = file_get_contents($apiUrl);
     
-            if (!file_exists($rutaJson)) {
+            if ($response === false) {
                 return $this->response->setJSON([
-                    'error' => 'Archivo JSON no encontrado.'
-                ])->setStatusCode(404);
+                    'error' => 'No se pudo obtener la lista de juegos desde Steam.'
+                ])->setStatusCode(500);
             }
     
-            $contenido = file_get_contents($rutaJson);
-            $json = json_decode($contenido, true);
+            $json = json_decode($response, true);
     
             if (!$json || !isset($json['applist']['apps'])) {
                 return $this->response->setJSON([
-                    'error' => 'Estructura del JSON no válida.'
+                    'error' => 'Estructura de respuesta de Steam no válida.'
                 ])->setStatusCode(500);
             }
     
@@ -1320,13 +1319,14 @@ class ApiController extends BaseController
             ])->setStatusCode(404);
     
         } catch (\Exception $e) {
-            log_message('error', 'Error al obtener AppID: ' . $e->getMessage());
+            log_message('error', 'Error al obtener AppID desde Steam API: ' . $e->getMessage());
     
             return $this->response->setJSON([
                 'error' => 'Ocurrió un error al buscar el AppID.'
             ])->setStatusCode(500);
         }
     }
+    
 
     private function normalizarNombre($nombre){
         $nombre = urldecode($nombre);
