@@ -1,0 +1,16 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      # Solo monta los directorios específicos que necesitas para desarrollo
+      - ./app:/var/www/html/app
+      - ./public:/var/www/html/public
+      # No montamos el directorio writable para evitar problemas de permisos
+    restart: unless-stopped
+    environment:
+      - CI_ENVIRONMENT=development

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: codeigniter-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: CI_ENVIRONMENT
+        value: production
+    healthCheckPath: /
+    numInstances: 1

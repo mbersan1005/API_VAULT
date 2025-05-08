@@ -1,0 +1,21 @@
+# Archivos y directorios a ignorar al construir la imagen Docker
+.git
+.github
+*.md
+.dockerignore
+.gitignore
+docker-compose.yml
+Dockerfile
+vendor
+node_modules
+writable/cache/*
+writable/logs/*
+writable/session/*
+writable/uploads/*
+!writable/cache/index.html
+!writable/logs/index.html
+!writable/session/index.html
+!writable/uploads/index.html
+tests/
+docs/
+*.log
