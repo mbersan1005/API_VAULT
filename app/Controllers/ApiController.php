@@ -1297,9 +1297,21 @@ class ApiController extends BaseController
     public function obtenerAppId($nombreJuego) {
         try {
             $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
-            $response = file_get_contents($apiUrl);
     
-            if ($response === false) {
+            // Inicializa cURL
+            $ch = curl_init($apiUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+    
+            // Verifica si la respuesta fue exitosa
+            if ($response === false || $httpCode !== 200) {
+                log_message('error', 'Error en cURL al llamar a Steam API: ' . $curlError);
                 return $this->response->setJSON([
                     'error' => 'No se pudo obtener la lista de juegos desde Steam.'
                 ])->setStatusCode(500);
@@ -1332,7 +1344,7 @@ class ApiController extends BaseController
             ])->setStatusCode(404);
     
         } catch (\Exception $e) {
-            log_message('error', 'Error al obtener AppID desde Steam API: ' . $e->getMessage());
+            log_message('error', 'Error al obtener AppID desde Steam API: ' . $e->getMessage() . ' en línea ' . $e->getLine());
     
             return $this->response->setJSON([
                 'error' => 'Ocurrió un error al buscar el AppID.'
@@ -1340,11 +1352,17 @@ class ApiController extends BaseController
         }
     }
     
-    private function normalizarNombre($nombre){
+    
+    private function normalizarNombre($nombre) {
+        
         $nombre = urldecode($nombre);
-        $nombre = trim(strtolower($nombre));
+        $nombre = trim(mb_strtolower($nombre, 'UTF-8'));
+        $nombre = iconv('UTF-8', 'ASCII//TRANSLIT', $nombre);
+        $nombre = preg_replace('/[^a-z0-9 ]/', '', $nombre);
         $nombre = preg_replace('/\s+/', ' ', $nombre);
+    
         return $nombre;
     }
+    
 }   
 ?>
