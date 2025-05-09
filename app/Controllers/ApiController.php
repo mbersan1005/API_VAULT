@@ -1298,44 +1298,28 @@ class ApiController extends BaseController
         try {
             $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
     
-            // Usar cURL en lugar de file_get_contents
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $apiUrl);
+            $ch = curl_init($apiUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    
             $response = curl_exec($ch);
-    
-            if (curl_errno($ch)) {
-                $errorMsg = curl_error($ch);
-                log_message('error', 'cURL error: ' . $errorMsg);
-                curl_close($ch);
-    
-                return $this->response->setJSON([
-                    'error' => 'Error al conectarse con la API de Steam.',
-                    'detalle' => $errorMsg
-                ])->setStatusCode(500);
-            }
-    
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
             curl_close($ch);
     
-            if ($httpCode !== 200 || !$response) {
-                log_message('error', 'Respuesta no válida de Steam. Código HTTP: ' . $httpCode);
-    
+            if ($response === false || $httpCode !== 200) {
+                log_message('error', 'Error en cURL al llamar a Steam API: ' . $curlError);
                 return $this->response->setJSON([
-                    'error' => 'Steam API no respondió correctamente.',
-                    'codigo_http' => $httpCode
+                    'error' => 'No se pudo obtener la lista de juegos desde Steam.'
                 ])->setStatusCode(500);
             }
     
             $json = json_decode($response, true);
     
             if (!$json || !isset($json['applist']['apps'])) {
-                log_message('error', 'JSON inválido recibido desde Steam.');
-    
                 return $this->response->setJSON([
-                    'error' => 'Estructura de respuesta de Steam no válida.',
-                    'respuesta' => $response
+                    'error' => 'Estructura de respuesta de Steam no válida.'
                 ])->setStatusCode(500);
             }
     
@@ -1357,17 +1341,14 @@ class ApiController extends BaseController
                 'appid' => null
             ])->setStatusCode(404);
     
-        } catch (\Throwable $e) {
-            log_message('error', 'Excepción al obtener AppID: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            log_message('error', 'Error al obtener AppID desde Steam API: ' . $e->getMessage() . ' en línea ' . $e->getLine());
     
             return $this->response->setJSON([
-                'error' => 'Ocurrió un error al buscar el AppID.',
-                'detalle' => $e->getMessage()
+                'error' => 'Ocurrió un error al buscar el AppID.'
             ])->setStatusCode(500);
         }
     }
-    
-    
     
     
     private function normalizarNombre($nombre) {
