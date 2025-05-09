@@ -18,6 +18,9 @@ class ApiController extends BaseController
 
     private $apiKeyValidator;
 
+    //https://apirest.saicasl.eu/api1/api/public -- https://vault-ci4-api.up.railway.app -- https://api-vault.onrender.com
+    private $baseUrlHost;
+
     public function __construct(){
         $this->apiKeyValidator = new ApiKeyValidator();
         $this->VideojuegoModelo = new VideojuegoModelo();
@@ -27,6 +30,7 @@ class ApiController extends BaseController
         $this->PlataformaModelo = new PlataformaModelo();
         $this->PublisherModelo = new PublisherModelo();
         $this->TiendaModelo = new TiendaModelo();
+        $this->baseUrlHost = "https://api-vault.onrender.com";
     }
 
     public function recibirJuegos(){
@@ -876,9 +880,7 @@ class ApiController extends BaseController
             }
     
             $imagen->move(WRITEPATH . '../public/resources/imagenes', $nombreOriginal, true);
-            
-            $baseUrl = 'https://vault-ci4-api.up.railway.app';
-            $rutaImagenFinal = $baseUrl . '/resources/imagenes/' . $nombreOriginal;
+            $rutaImagenFinal = $this->baseUrlHost . '/resources/imagenes/' . $nombreOriginal;
     
             $insertData = [
                 'nombre' => $datos['nombre'],
@@ -1018,8 +1020,7 @@ class ApiController extends BaseController
                     throw new \Exception('Error al mover la imagen al servidor.');
                 }
     
-                $baseUrl = 'https://vault-ci4-api.up.railway.app';
-                $rutaImagenFinal = $baseUrl . '/resources/imagenes/' . $nombreOriginal;
+                $rutaImagenFinal = $this->baseUrlHost . '/resources/imagenes/' . $nombreOriginal;
             } else {
                 $rutaImagenFinal = $juegoActual['imagen'];
             }
