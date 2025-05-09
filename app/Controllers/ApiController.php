@@ -1060,20 +1060,33 @@ class ApiController extends BaseController
     
     public function eliminarDatosActualizar(){
         $db = \Config\Database::connect();
-        $db->transStart();
+        $db->transStart();  
+        
+        try {
+            $this->VideojuegoModelo->where('creado_por_admin !=', 1)->delete();
     
-        $this->VideojuegoModelo->where('creado_por_admin !=', 1)->delete();
-    
-        $db->query('SELECT setval(\'vault."Videojuegos_id_seq"\', 1, false);');
-    
-        $db->query('TRUNCATE TABLE vault.generos RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.desarrolladoras RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.plataformas RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.publishers RESTART IDENTITY CASCADE;');
-        $db->query('TRUNCATE TABLE vault.tiendas RESTART IDENTITY CASCADE;');
+            $db->query('SELECT setval(\'vault."Videojuegos_id_seq"\', (SELECT MAX(id) FROM vault.videojuegos), true);');
+            
+            $db->query('TRUNCATE TABLE vault.generos RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.desarrolladoras RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.plataformas RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.publishers RESTART IDENTITY CASCADE;');
+            $db->query('TRUNCATE TABLE vault.tiendas RESTART IDENTITY CASCADE;');
+            
+        } catch (\Exception $e) {
+            $db->transRollback();
+            log_message('error', 'Error al realizar eliminación y actualización: ' . $e->getMessage());
+            throw new \Exception('Error en la transacción: ' . $e->getMessage());
+        }
     
         $db->transComplete();
+    
+        if ($db->transStatus() === FALSE) {
+            log_message('error', 'La transacción falló en eliminarDatosActualizar.');
+            throw new \Exception('La transacción falló.');
+        }
     }
+    
     
     public function recibirJuegosAdmin(){
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
