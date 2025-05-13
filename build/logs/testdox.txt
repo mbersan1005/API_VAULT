@@ -1,0 +1,5 @@
+Api Controller (App\Controllers\ApiController)
+ [x] ObtenerIdsJuegos API
+ [x] Recibir juegos
+ [x] 
+

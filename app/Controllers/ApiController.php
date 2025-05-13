@@ -12,11 +12,15 @@ use App\Models\GeneroModelo;
 use App\Models\PlataformaModelo;
 use App\Models\PublisherModelo;
 use App\Models\TiendaModelo;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class ApiController extends BaseController
 {
+    protected $request;
+    protected $response;
 
-    private $apiKeyValidator;
+    public $apiKeyValidator;
 
     //https://apirest.saicasl.eu/api1/api/public -- https://vault-ci4-api.up.railway.app -- https://api-vault.onrender.com
     private $baseUrlHost;
@@ -31,6 +35,16 @@ class ApiController extends BaseController
         $this->PublisherModelo = new PublisherModelo();
         $this->TiendaModelo = new TiendaModelo();
         $this->baseUrlHost = "https://api-vault.onrender.com";
+    }
+
+    public function setRequest(RequestInterface $request)
+    {
+        $this->request = $request;
+    }
+
+    public function setResponse(ResponseInterface $response)
+    {
+        $this->response = $response;
     }
 
     public function recibirJuegos(){

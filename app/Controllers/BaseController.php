@@ -41,13 +41,13 @@ abstract class BaseController extends Controller
      * Be sure to declare properties for any property fetch you initialized.
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
-    protected $VideojuegoModelo;
-    protected $AdministradoresModelo;
-    protected $GeneroModelo;
-    protected $DesarrolladoraModelo;
-    protected $PlataformaModelo;
-    protected $PublisherModelo;
-    protected $TiendaModelo;
+    public $VideojuegoModelo;
+    public $AdministradoresModelo;
+    public $GeneroModelo;
+    public $DesarrolladoraModelo;
+    public $PlataformaModelo;
+    public $PublisherModelo;
+    public $TiendaModelo;
 
     /**
      * @return void
