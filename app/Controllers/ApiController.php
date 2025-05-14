@@ -253,7 +253,7 @@ class ApiController extends BaseController
     
             if (!$juego) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontró videojuego con ese ID'
+                    'error' => 'No se encontró videojuego con ese ID'
                 ])->setStatusCode(404);
             }
     
@@ -280,23 +280,17 @@ class ApiController extends BaseController
             $nombre = trim($data['nombre'] ?? '');
             $password = trim($data['password'] ?? '');
     
-            if ($nombre === '' || $password === '') {
-                return $this->response->setJSON([
-                    'mensaje' => 'Usuario o contraseña no proporcionados'
-                ])->setStatusCode(400);
-            }
-    
             $administrador = $this->AdministradoresModelo->where('nombre', $nombre)->first();
     
             if (!$administrador) {
                 return $this->response->setJSON([
-                    'mensaje' => 'Usuario no encontrado'
+                    'error' => 'Usuario no encontrado'
                 ])->setStatusCode(404);
             }
     
             if (!password_verify($password, $administrador['password'])) {
                 return $this->response->setJSON([
-                    'mensaje' => 'Contraseña incorrecta'
+                    'error' => 'Contraseña incorrecta'
                 ])->setStatusCode(401);
             }
     
@@ -329,7 +323,7 @@ class ApiController extends BaseController
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-    
+
         try {
             $db = \Config\Database::connect();
             $db->transBegin();
@@ -347,7 +341,6 @@ class ApiController extends BaseController
             $db->transCommit();
     
             return $this->response->setJSON([
-                'status' => 'ok',
                 'mensaje' => 'Datos actualizados correctamente.'
             ])->setStatusCode(200);
     
@@ -586,7 +579,7 @@ class ApiController extends BaseController
     
             if (empty($generos)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron géneros'
+                    'error' => 'No se encontraron géneros'
                 ])->setStatusCode(404);
             }
     
@@ -615,7 +608,7 @@ class ApiController extends BaseController
     
             if (empty($plataformas)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron plataformas'
+                    'error' => 'No se encontraron plataformas'
                 ])->setStatusCode(404);
             }
     
@@ -644,7 +637,7 @@ class ApiController extends BaseController
     
             if (empty($tiendas)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron tiendas'
+                    'error' => 'No se encontraron tiendas'
                 ])->setStatusCode(404);
             }
     
@@ -673,7 +666,7 @@ class ApiController extends BaseController
     
             if (empty($desarrolladoras)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron desarrolladoras'
+                    'error' => 'No se encontraron desarrolladoras'
                 ])->setStatusCode(404);
             }
     
@@ -702,7 +695,7 @@ class ApiController extends BaseController
     
             if (empty($publishers)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron publishers'
+                    'error' => 'No se encontraron publishers'
                 ])->setStatusCode(404);
             }
     
@@ -740,7 +733,7 @@ class ApiController extends BaseController
         $columnasPermitidas = ['generos', 'tiendas', 'publishers', 'desarrolladoras', 'plataformas_principales'];
     
         if (!in_array($categoria, $columnasPermitidas)) {
-            return $this->response->setJSON(['mensaje' => 'Categoría no válida'])
+            return $this->response->setJSON(['error' => 'Categoría no válida'])
                                   ->setStatusCode(400);
         }
     
@@ -762,7 +755,7 @@ class ApiController extends BaseController
     
             if (empty($result)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron videojuegos con esa categoría o nombre'
+                    'error' => 'No se encontraron videojuegos con esa categoría o nombre'
                 ])->setStatusCode(404);
             }
     
@@ -785,19 +778,19 @@ class ApiController extends BaseController
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
         }
-    
+        
         $json = $this->request->getJSON();
         $id = $json->id ?? null;
     
         if (!$id) {
-            return $this->response->setJSON(['mensaje' => 'ID del juego no proporcionado'])
+            return $this->response->setJSON(['error' => 'ID del juego no proporcionado'])
                                   ->setStatusCode(400); 
         }
     
         $juego = $this->VideojuegoModelo->find($id);
     
         if (!$juego) {
-            return $this->response->setJSON(['mensaje' => 'Juego no encontrado'])
+            return $this->response->setJSON(['error' => 'Juego no encontrado'])
                                   ->setStatusCode(404); 
         }
     
@@ -846,8 +839,7 @@ class ApiController extends BaseController
             log_message('error', 'Error al obtener datos del formulario: ' . $e->getMessage());
     
             return $this->response->setJSON([
-                'error' => 'Ocurrió un error al obtener los datos',
-                'mensaje' => $e->getMessage()
+                'error' => 'Ocurrió un error al obtener los datos'
             ])->setStatusCode(500);
         }
     }
@@ -868,20 +860,20 @@ class ApiController extends BaseController
             empty($datos['desarrolladoras']) || empty($datos['publishers'])
         ) {
             return $this->response->setJSON([
-                'mensaje' => 'Faltan campos obligatorios o listas vacías',
+                'error' => 'Faltan campos obligatorios o listas vacías',
                 'datos_recibidos' => $datos
             ])->setStatusCode(400);
         }
     
         if (!$imagen || !$imagen->isValid() || $imagen->hasMoved()) {
             return $this->response->setJSON([
-                'mensaje' => 'La imagen es obligatoria y debe ser válida'
+                'error' => 'La imagen es obligatoria y debe ser válida'
             ])->setStatusCode(400); 
         }
     
         $extensionesPermitidas = ['jpg', 'jpeg', 'png'];
         if (!in_array(strtolower($imagen->getExtension()), $extensionesPermitidas)) {
-            return $this->response->setJSON(['mensaje' => 'Solo se permiten imágenes en formato JPG o PNG.'])
+            return $this->response->setJSON(['error' => 'Solo se permiten imágenes en formato JPG o PNG.'])
                                   ->setStatusCode(400); 
         }
     
@@ -922,13 +914,13 @@ class ApiController extends BaseController
                                       ->setStatusCode(201); 
             } else {
                 $db->transRollback();
-                return $this->response->setJSON(['mensaje' => 'Error al agregar el juego', 'datos' => $insertData])
+                return $this->response->setJSON(['error' => 'Error al agregar el juego', 'datos' => $insertData])
                                       ->setStatusCode(500); 
             }
     
         } catch (\Exception $e) {
             $db->transRollback();
-            return $this->response->setJSON(['mensaje' => 'Error al agregar el juego: ' . $e->getMessage()])
+            return $this->response->setJSON(['error' => 'Error al agregar el juego: ' . $e->getMessage()])
                                   ->setStatusCode(500); 
         }
     }
@@ -944,24 +936,10 @@ class ApiController extends BaseController
         $nombre = $datos['nombre'] ?? null;
         $password = $datos['password'] ?? null;
     
-        if (empty($nombre)) {
-            return $this->response->setJSON([
-                'mensaje' => 'El nombre no puede estar vacío',
-                'datos' => []
-            ])->setStatusCode(400); 
-        }
-    
-        if (empty($password)) {
-            return $this->response->setJSON([
-                'mensaje' => 'La contraseña no puede estar vacía',
-                'datos' => []
-            ])->setStatusCode(400); 
-        }
-
         $adminExistente = $this->AdministradoresModelo->where('nombre', $nombre)->first();
         if ($adminExistente) {
             return $this->response->setJSON([
-                'mensaje' => 'Ya existe un administrador con ese nombre',
+                'error' => 'Ya existe un administrador con ese nombre',
                 'datos' => []
             ])->setStatusCode(409); 
         }
@@ -997,8 +975,7 @@ class ApiController extends BaseController
             $db->transRollback();
             
             return $this->response->setJSON([
-                'mensaje' => 'Error al crear el administrador: ' . $e->getMessage(),
-                'datos' => []
+                'error' => 'Error al crear el administrador'
             ])->setStatusCode(500);
         }
     }
@@ -1015,7 +992,7 @@ class ApiController extends BaseController
     
         $juegoActual = $this->VideojuegoModelo->find($datos['id']);
         if (!$juegoActual) {
-            return $this->response->setJSON(['mensaje' => 'Juego no encontrado.'])->setStatusCode(404);
+            return $this->response->setJSON(['error' => 'Juego no encontrado.'])->setStatusCode(404);
         }
     
         $db = \Config\Database::connect();
@@ -1068,7 +1045,7 @@ class ApiController extends BaseController
         } catch (\Exception $e) {
             $db->transRollback();
             return $this->response->setJSON([
-                'mensaje' => 'Error al actualizar el juego: ' . $e->getMessage()
+                'error' => 'Error al actualizar el juego'
             ])->setStatusCode(500); 
         }
     }
@@ -1115,7 +1092,7 @@ class ApiController extends BaseController
     
             if (empty($juegos)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron videojuegos creados por administradores'
+                    'error' => 'No se encontraron videojuegos creados por administradores'
                 ])->setStatusCode(404);
             }
     
@@ -1195,23 +1172,16 @@ class ApiController extends BaseController
         try {
             $data = $this->request->getJSON(true) ?? [];
             $nombre = trim($data['nombre'] ?? '');
-    
-            if ($nombre === '') {
-                return $this->response->setJSON([
-                    'mensaje' => 'No se proporcionó ningún término de búsqueda',
-                    'juegos' => []
-                ])->setStatusCode(400);
-            }
-    
+
             $juegos = $this->VideojuegoModelo
                 ->like('LOWER(nombre)', strtolower($nombre))
                 ->findAll();
     
             if (empty($juegos)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron juegos que coincidan',
+                    'error' => 'No se encontraron juegos que coincidan',
                     'juegos' => []
-                ])->setStatusCode(404);
+                ])->setStatusCode(404);                
             }
     
             return $this->response->setJSON(['juegos' => $juegos])->setStatusCode(200);
@@ -1235,21 +1205,14 @@ class ApiController extends BaseController
         try {
             $data = $this->request->getJSON(true) ?? [];
             $nombre = trim($data['nombre'] ?? '');
-    
-            if ($nombre === '') {
-                return $this->response->setJSON([
-                    'mensaje' => 'No se proporcionó ningún término de búsqueda',
-                    'desarrolladoras' => []
-                ])->setStatusCode(400);
-            }
-    
+
             $desarrolladoras = $this->DesarrolladoraModelo
                 ->like('LOWER(nombre)', strtolower($nombre))
                 ->findAll();
     
             if (empty($desarrolladoras)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron desarrolladoras que coincidan',
+                    'error' => 'No se encontraron desarrolladoras que coincidan',
                     'desarrolladoras' => []
                 ])->setStatusCode(404);
             }
@@ -1278,20 +1241,13 @@ class ApiController extends BaseController
             $data = $this->request->getJSON(true) ?? [];
             $nombre = trim($data['nombre'] ?? '');
     
-            if ($nombre === '') {
-                return $this->response->setJSON([
-                    'mensaje' => 'No se proporcionó ningún término de búsqueda',
-                    'publishers' => []
-                ])->setStatusCode(400);
-            }
-    
             $publishers = $this->PublisherModelo
                 ->like('LOWER(nombre)', strtolower($nombre))
                 ->findAll();
     
             if (empty($publishers)) {
                 return $this->response->setJSON([
-                    'mensaje' => 'No se encontraron publishers que coincidan',
+                    'error' => 'No se encontraron publishers que coincidan',
                     'publishers' => []
                 ])->setStatusCode(404);
             }
@@ -1310,6 +1266,11 @@ class ApiController extends BaseController
     }
     
     public function obtenerAppId($nombreJuego) {
+        ini_set("post_max_size",-1);
+        ini_set("max_execution_time",-1);
+        ini_set("memory_limit",-1);
+        ini_set("max_input_time",-1);
+        ini_set("max_input_vars",-1);
         try {
             $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
     
@@ -1352,7 +1313,7 @@ class ApiController extends BaseController
             }
     
             return $this->response->setJSON([
-                'mensaje' => 'Juego no encontrado',
+                'error' => 'Juego no encontrado',
                 'appid' => null
             ])->setStatusCode(404);
     
