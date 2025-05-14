@@ -854,29 +854,6 @@ class ApiController extends BaseController
         $datos = $this->request->getPost();
         $imagen = $this->request->getFile('imagen');
     
-        if (
-            empty($datos['nombre']) || empty($datos['descripcion']) || empty($datos['fecha_lanzamiento']) ||
-            empty($datos['tiendas']) || empty($datos['plataformas']) || empty($datos['generos']) ||
-            empty($datos['desarrolladoras']) || empty($datos['publishers'])
-        ) {
-            return $this->response->setJSON([
-                'error' => 'Faltan campos obligatorios o listas vacías',
-                'datos_recibidos' => $datos
-            ])->setStatusCode(400);
-        }
-    
-        if (!$imagen || !$imagen->isValid() || $imagen->hasMoved()) {
-            return $this->response->setJSON([
-                'error' => 'La imagen es obligatoria y debe ser válida'
-            ])->setStatusCode(400); 
-        }
-    
-        $extensionesPermitidas = ['jpg', 'jpeg', 'png'];
-        if (!in_array(strtolower($imagen->getExtension()), $extensionesPermitidas)) {
-            return $this->response->setJSON(['error' => 'Solo se permiten imágenes en formato JPG o PNG.'])
-                                  ->setStatusCode(400); 
-        }
-    
         try {
             $nombreOriginal = basename($imagen->getClientName());
             $rutaDestino = WRITEPATH . '../public/resources/imagenes/' . $nombreOriginal;
@@ -920,7 +897,7 @@ class ApiController extends BaseController
     
         } catch (\Exception $e) {
             $db->transRollback();
-            return $this->response->setJSON(['error' => 'Error al agregar el juego: ' . $e->getMessage()])
+            return $this->response->setJSON(['error' => 'Error al agregar el juego'])
                                   ->setStatusCode(500); 
         }
     }
