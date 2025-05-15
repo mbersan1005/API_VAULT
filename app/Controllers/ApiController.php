@@ -215,6 +215,7 @@ class ApiController extends BaseController
 
             if (isset($data['description'])) {
                 $descripcion =  $data['description'];
+                $descripcion = strip_tags($data['description']);
             }
 
             $juegoData = [
@@ -1242,12 +1243,15 @@ class ApiController extends BaseController
         }
     }
     
-    public function obtenerAppId($nombreJuego) {
+    public function obtenerAppId() {
         ini_set("post_max_size",-1);
         ini_set("max_execution_time",-1);
         ini_set("memory_limit",-1);
         ini_set("max_input_time",-1);
         ini_set("max_input_vars",-1);
+        
+        $nombreJuego = $this->request->getGet('nombreJuego');
+
         try {
             $apiUrl = 'https://api.steampowered.com/ISteamApps/GetAppList/v2/';
     
@@ -1290,8 +1294,7 @@ class ApiController extends BaseController
             }
     
             return $this->response->setJSON([
-                'error' => 'Juego no encontrado',
-                'appid' => null
+                'error' => 'Gráfica del juego no encontrada'
             ])->setStatusCode(404);
     
         } catch (\Exception $e) {
