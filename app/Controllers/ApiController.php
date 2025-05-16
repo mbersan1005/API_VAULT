@@ -866,6 +866,13 @@ class ApiController extends BaseController
             $imagen->move(WRITEPATH . '../public/resources/imagenes', $nombreOriginal, true);
             $rutaImagenFinal = $this->baseUrlHost . '/resources/imagenes/' . $nombreOriginal;
     
+            $juegoExistente = $this->VideojuegoModelo->where('nombre', $datos['nombre'])->first();
+    
+            if ($juegoExistente) {
+                return $this->response->setJSON(['error' => 'Ya existe un juego con este nombre'])
+                                      ->setStatusCode(400);
+            }
+    
             $insertData = [
                 'nombre' => $datos['nombre'],
                 'nota_metacritic' => $datos['nota_metacritic'] ?? null,
