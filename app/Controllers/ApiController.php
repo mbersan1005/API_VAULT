@@ -14,6 +14,7 @@ use App\Models\PublisherModelo;
 use App\Models\TiendaModelo;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Cloudinary\Cloudinary;
 
 class ApiController extends BaseController
 {
@@ -845,7 +846,8 @@ class ApiController extends BaseController
         }
     }
     
-    public function agregarJuego(){
+    public function agregarJuego()
+    {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
     
         if ($resultadoValidacion !== true) {
@@ -856,21 +858,34 @@ class ApiController extends BaseController
         $imagen = $this->request->getFile('imagen');
     
         try {
-            $nombreOriginal = basename($imagen->getClientName());
-            $rutaDestino = WRITEPATH . '../public/resources/imagenes/' . $nombreOriginal;
-            
-            if (is_file($rutaDestino)) {
-                unlink($rutaDestino);
+
+            $juegoExistente = $this->VideojuegoModelo->where('nombre', $datos['nombre'])->first();
+            if ($juegoExistente) {
+                return $this->response->setJSON(['error' => 'Ya existe un juego con este nombre.'])
+                                      ->setStatusCode(400);
             }
     
-            $imagen->move(WRITEPATH . '../public/resources/imagenes', $nombreOriginal, true);
-            $rutaImagenFinal = $this->baseUrlHost . '/resources/imagenes/' . $nombreOriginal;
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => 'mbersan1005',
+                    'api_key'    => '246324721933957',
+                    'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                ],
+                'url' => [
+                    'secure' => true
+                ]
+            ]);
     
-            $juegoExistente = $this->VideojuegoModelo->where('nombre', $datos['nombre'])->first();
+            $uploadResult = $cloudinary->uploadApi()->upload($imagen->getTempName(), [
+                'folder' => 'juegos',
+                'upload_preset' => 'ml_default',
+            ]);
     
-            if ($juegoExistente) {
-                return $this->response->setJSON(['error' => 'Ya existe un juego con este nombre'])
-                                      ->setStatusCode(400);
+            $rutaImagenFinal = $uploadResult['secure_url'] ?? null;
+    
+            if (!$rutaImagenFinal) {
+                return $this->response->setJSON(['error' => 'Error al obtener URL segura de imagen.'])
+                                      ->setStatusCode(500);
             }
     
             $insertData = [
@@ -880,12 +895,12 @@ class ApiController extends BaseController
                 'sitio_web' => $datos['sitio_web'] ?? null,
                 'imagen' => $rutaImagenFinal,
                 'plataformas_principales' => $datos['plataformas'],
-                'desarrolladoras' => $datos['desarrolladoras'], 
-                'publishers' => $datos['publishers'],            
-                'tiendas' => $datos['tiendas'],            
+                'desarrolladoras' => $datos['desarrolladoras'],
+                'publishers' => $datos['publishers'],
+                'tiendas' => $datos['tiendas'],
                 'generos' => $datos['generos'],
                 'descripcion' => $datos['descripcion'],
-                'creado_por_admin' => 1
+                'creado_por_admin' => 1,
             ];
     
             $db = \Config\Database::connect();
@@ -895,20 +910,23 @@ class ApiController extends BaseController
     
             if ($juegoId) {
                 $db->transCommit();
-                return $this->response->setJSON(['mensaje' => 'Juego agregado correctamente'])
-                                      ->setStatusCode(201); 
+                return $this->response->setJSON(['mensaje' => 'Juego agregado correctamente.'])
+                                      ->setStatusCode(201);
             } else {
                 $db->transRollback();
-                return $this->response->setJSON(['error' => 'Error al agregar el juego', 'datos' => $insertData])
-                                      ->setStatusCode(500); 
+                return $this->response->setJSON(['error' => 'Error al agregar el juego.'])
+                                      ->setStatusCode(500);
             }
     
         } catch (\Exception $e) {
-            $db->transRollback();
-            return $this->response->setJSON(['error' => 'Error al agregar el juego'])
-                                  ->setStatusCode(500); 
+            if (isset($db)) {
+                $db->transRollback();
+            }
+            return $this->response->setJSON(['error' => 'Excepción al agregar juego.', 'detalle' => $e->getMessage()])
+                                  ->setStatusCode(500);
         }
     }
+    
     
     public function crearAdministrador() {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
