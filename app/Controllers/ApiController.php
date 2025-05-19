@@ -797,6 +797,22 @@ class ApiController extends BaseController
         }
     
         try {
+
+            if (strpos($juego['imagen'], 'res.cloudinary.com') !== false) {
+                $cloudinary = new Cloudinary([
+                    'cloud' => [
+                        'cloud_name' => 'mbersan1005',
+                        'api_key'    => '246324721933957',
+                        'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                    ],
+                ]);
+
+                $publicId = $this->extraerPublicIdDesdeUrl($juego['imagen']);
+                if ($publicId) {
+                    $cloudinary->uploadApi()->destroy($publicId);
+                }
+            }
+
             $this->VideojuegoModelo->delete($id);
     
             return $this->response->setJSON([
@@ -858,7 +874,6 @@ class ApiController extends BaseController
         $imagen = $this->request->getFile('imagen');
     
         try {
-
             $juegoExistente = $this->VideojuegoModelo->where('nombre', $datos['nombre'])->first();
             if ($juegoExistente) {
                 return $this->response->setJSON(['error' => 'Ya existe un juego con este nombre.'])
@@ -876,9 +891,11 @@ class ApiController extends BaseController
                 ]
             ]);
     
+            $nombreJuegoSlug = url_title($datos['nombre'], '-', true);
+    
             $uploadResult = $cloudinary->uploadApi()->upload($imagen->getTempName(), [
-                'folder' => 'juegos',
-                'upload_preset' => 'ml_default',
+                'public_id' => 'videojuegos/' . $nombreJuegoSlug,
+                'overwrite' => true
             ]);
     
             $rutaImagenFinal = $uploadResult['secure_url'] ?? null;
@@ -983,8 +1000,8 @@ class ApiController extends BaseController
         }
     }
     
-    public function editarJuego(){
-        
+    public function editarJuego()
+    {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
         if ($resultadoValidacion !== true) {
             return $resultadoValidacion;
@@ -999,22 +1016,36 @@ class ApiController extends BaseController
         }
     
         $db = \Config\Database::connect();
-        $db->transBegin(); 
+        $db->transBegin();
     
         try {
+
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => 'mbersan1005',
+                    'api_key'    => '246324721933957',
+                    'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                ],
+            ]);
+    
             if ($imagen && $imagen->isValid() && !$imagen->hasMoved()) {
-                $nombreOriginal = basename($imagen->getClientName());
-                $rutaDestino = WRITEPATH . '../public/resources/imagenes/' . $nombreOriginal;
     
-                if (is_file($rutaDestino)) {
-                    unlink($rutaDestino);
+                if (strpos($juegoActual['imagen'], 'res.cloudinary.com') !== false) {
+                    $publicId = $this->extraerPublicIdDesdeUrl($juegoActual['imagen']);
+                    if ($publicId) {
+                        $cloudinary->uploadApi()->destroy($publicId);
+                    }
                 }
     
-                if (!$imagen->move(WRITEPATH . '../public/resources/imagenes', $nombreOriginal, true)) {
-                    throw new \Exception('Error al mover la imagen al servidor.');
-                }
+                $nombreJuegoSlug = url_title($datos['nombre'], '-', true);
+                $tempPath = $imagen->getTempName();
     
-                $rutaImagenFinal = $this->baseUrlHost . '/resources/imagenes/' . $nombreOriginal;
+                $uploadResult = $cloudinary->uploadApi()->upload($tempPath, [
+                    'public_id' => 'videojuegos/' . $nombreJuegoSlug,
+                    'overwrite' => true
+                ]);
+    
+                $rutaImagenFinal = $uploadResult['secure_url'];
             } else {
                 $rutaImagenFinal = $juegoActual['imagen'];
             }
@@ -1041,17 +1072,46 @@ class ApiController extends BaseController
                 return $this->response->setJSON([
                     'mensaje' => 'Juego actualizado correctamente.',
                     'datos' => $updateData
-                ])->setStatusCode(200); 
+                ])->setStatusCode(200);
             } else {
                 throw new \Exception('Error al actualizar el juego.');
             }
+    
         } catch (\Exception $e) {
             $db->transRollback();
             return $this->response->setJSON([
-                'error' => 'Error al actualizar el juego'
-            ])->setStatusCode(500); 
+                'error' => 'Error al actualizar el juego',
+                'detalle' => $e->getMessage()
+            ])->setStatusCode(500);
         }
     }
+    
+    private function extraerPublicIdDesdeUrl($url)
+    {
+        $parsed = parse_url($url);
+        if (!isset($parsed['path'])) return null;
+    
+        $path = trim($parsed['path'], '/');
+        $segments = explode('/', $path);
+    
+        $uploadIndex = array_search('upload', $segments);
+        if ($uploadIndex === false || !isset($segments[$uploadIndex + 1])) {
+            return null;
+        }
+    
+        $publicIdParts = array_slice($segments, $uploadIndex + 1);
+    
+        if (preg_match('/^v\d+$/', $publicIdParts[0])) {
+            array_shift($publicIdParts);
+        }
+    
+        $last = array_pop($publicIdParts);
+        $last = preg_replace('/\.(jpg|jpeg|png)$/', '', $last);
+        $publicIdParts[] = $last;
+    
+        return implode('/', $publicIdParts);
+    }
+       
     
     public function eliminarDatosActualizar(){
         $db = \Config\Database::connect();
@@ -1120,6 +1180,30 @@ class ApiController extends BaseController
         }
     
         try {
+
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => 'mbersan1005',
+                    'api_key'    => '246324721933957',
+                    'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                ]
+            ]);
+
+            $juegos = $this->VideojuegoModelo->findAll();
+
+            foreach ($juegos as $juego) {
+                if (isset($juego['imagen']) && strpos($juego['imagen'], 'res.cloudinary.com') !== false) {
+                    $publicId = $this->extraerPublicIdDesdeUrl($juego['imagen']);
+                    if ($publicId) {
+                        try {
+                            $cloudinary->uploadApi()->destroy($publicId);
+                        } catch (\Exception $e) {
+                            log_message('error', 'Error al eliminar imagen de Cloudinary (ID: ' . $publicId . '): ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
+
             $this->eliminarDatosPurgar();
     
             $idsJuegos = $this->obtenerIdsJuegos_API();
