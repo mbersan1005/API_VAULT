@@ -249,7 +249,7 @@ class DataController extends BaseController
         }
 
         try {
-            $desarrolladoras = $this->DesarrolladoraModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
+            $desarrolladoras = $this->DesarrolladoraModelo->findAll();
 
             if (empty($desarrolladoras)) {
                 return $this->response->setJSON([
@@ -278,7 +278,7 @@ class DataController extends BaseController
         }
 
         try {
-            $publishers = $this->PublisherModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
+            $publishers = $this->PublisherModelo->findAll();
 
             if (empty($publishers)) {
                 return $this->response->setJSON([
