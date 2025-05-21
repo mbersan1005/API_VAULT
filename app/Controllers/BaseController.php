@@ -66,5 +66,30 @@ abstract class BaseController extends Controller
         return $this->response->setStatusCode($code)->setJSON($responseBody);
     }
 
+    protected function extraerPublicIdDesdeUrl($url)
+    {
+        $parsed = parse_url($url);
+        if (!isset($parsed['path'])) return null;
+    
+        $path = trim($parsed['path'], '/');
+        $segments = explode('/', $path);
+    
+        $uploadIndex = array_search('upload', $segments);
+        if ($uploadIndex === false || !isset($segments[$uploadIndex + 1])) {
+            return null;
+        }
+    
+        $publicIdParts = array_slice($segments, $uploadIndex + 1);
+    
+        if (preg_match('/^v\d+$/', $publicIdParts[0])) {
+            array_shift($publicIdParts);
+        }
+    
+        $last = array_pop($publicIdParts);
+        $last = preg_replace('/\.(jpg|jpeg|png)$/', '', $last);
+        $publicIdParts[] = $last;
+    
+        return implode('/', $publicIdParts);
+    }
 
 }
