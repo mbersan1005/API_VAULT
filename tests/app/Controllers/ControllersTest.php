@@ -3,15 +3,9 @@
 namespace App\Controllers;
 
 use App\Base\BaseTestCase;
-use CodeIgniter\HTTP\RequestInterface;
-use CodeIgniter\HTTP\ResponseInterface;
-use CodeIgniter\HTTP\Request;
-use CodeIgniter\HTTP\Response;
 use App\Models\VideojuegoModelo;
-use App\Controllers\Services;
 
-
-class ApiControllerTest extends BaseTestCase
+class ControllersTest extends BaseTestCase
 {
 
     public function testObtenerIdsJuegos_API()
@@ -39,7 +33,7 @@ class ApiControllerTest extends BaseTestCase
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
     
-        $controller = new ApiController();
+        $controller = new DataController();
         $controller->VideojuegoModelo = $videojuegoModelo;
         $controller->apiKeyValidator = $apiKeyValidator;
     
@@ -75,5 +69,75 @@ class ApiControllerTest extends BaseTestCase
             throw $e;
         }
     }
+
+    public function testRecibirDatosJuego_Exito()
+    {
+        $videojuegoModelo = $this->createMock(\App\Models\VideojuegoModelo::class);
+        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
+
+        $apiKeyValidator->method('validar')->willReturn(true);
+
+        $juegoSimulado = ['id' => 1, 'nombre' => 'Test Game'];
+        $videojuegoModelo->method('find')->willReturn($juegoSimulado);
+
+        $controller = new \App\Controllers\DataController();
+        $controller->VideojuegoModelo = $videojuegoModelo;
+        $controller->apiKeyValidator = $apiKeyValidator;
+
+        $controller->setRequest(\Config\Services::request());
+        $controller->setResponse(\Config\Services::response());
+
+        $response = $controller->recibirDatosJuego(1);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertStringContainsString('Test Game', $response->getBody());
+    }
+
+    public function testRecibirDatosJuego_NoEncontrado()
+    {
+        $videojuegoModelo = $this->createMock(\App\Models\VideojuegoModelo::class);
+        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
+
+        $apiKeyValidator->method('validar')->willReturn(true);
+        $videojuegoModelo->method('find')->willReturn(null);
+
+        $controller = new \App\Controllers\DataController();
+        $controller->VideojuegoModelo = $videojuegoModelo;
+        $controller->apiKeyValidator = $apiKeyValidator;
+
+        $controller->setRequest(\Config\Services::request());
+        $controller->setResponse(\Config\Services::response());
+
+        $response = $controller->recibirDatosJuego(999);
+
+        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertStringContainsString('No se encontró', $response->getBody());
+    }
+
+    public function testRecibirDatosJuego_Excepcion()
+    {
+        $videojuegoModelo = $this->createMock(\App\Models\VideojuegoModelo::class);
+        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
+
+        $apiKeyValidator->method('validar')->willReturn(true);
+        $videojuegoModelo->method('find')->willThrowException(new \Exception('DB error'));
+
+        $controller = new \App\Controllers\DataController();
+        $controller->VideojuegoModelo = $videojuegoModelo;
+        $controller->apiKeyValidator = $apiKeyValidator;
+
+        $controller->setRequest(\Config\Services::request());
+        $controller->setResponse(\Config\Services::response());
+
+        $response = $controller->recibirDatosJuego(1);
+
+        $this->assertEquals(500, $response->getStatusCode());
+        $this->assertStringContainsString('Ocurrió un error', $response->getBody());
+    }
+
+    
+
+
+
     
 }

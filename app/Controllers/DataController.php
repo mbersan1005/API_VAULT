@@ -162,7 +162,7 @@ class DataController extends BaseController
         }
 
         try {
-            $generos = $this->GeneroModelo->orderBy('cantidad_juegos', 'DESC')->findAll();
+            $generos = $this->GeneroModelo->findAll();
 
             if (empty($generos)) {
                 return $this->response->setJSON([

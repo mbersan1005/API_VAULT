@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="App\Controllers\ApiControllerTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ApiControllerTest.php" tests="3" assertions="5" errors="0" warnings="0" failures="0" skipped="0" time="3.805667">
-    <testcase name="testObtenerIdsJuegos_API" class="App\Controllers\ApiControllerTest" classname="App.Controllers.ApiControllerTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ApiControllerTest.php" line="17" assertions="1" time="2.436444"/>
-    <testcase name="testRecibirJuegos" class="App\Controllers\ApiControllerTest" classname="App.Controllers.ApiControllerTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ApiControllerTest.php" line="33" assertions="3" time="0.722668"/>
-    <testcase name="test" class="App\Controllers\ApiControllerTest" classname="App.Controllers.ApiControllerTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ApiControllerTest.php" line="25" assertions="1" time="0.646555"/>
+  <testsuite name="App\Controllers\ControllersTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ControllersTest.php" tests="6" assertions="11" errors="0" warnings="0" failures="0" skipped="0" time="5.085719">
+    <testcase name="testObtenerIdsJuegos_API" class="App\Controllers\ControllersTest" classname="App.Controllers.ControllersTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ControllersTest.php" line="11" assertions="1" time="1.912376"/>
+    <testcase name="testRecibirJuegos" class="App\Controllers\ControllersTest" classname="App.Controllers.ControllersTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ControllersTest.php" line="27" assertions="3" time="0.634283"/>
+    <testcase name="testRecibirDatosJuego_Exito" class="App\Controllers\ControllersTest" classname="App.Controllers.ControllersTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ControllersTest.php" line="73" assertions="2" time="0.710644"/>
+    <testcase name="testRecibirDatosJuego_NoEncontrado" class="App\Controllers\ControllersTest" classname="App.Controllers.ControllersTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ControllersTest.php" line="96" assertions="2" time="0.599439"/>
+    <testcase name="testRecibirDatosJuego_Excepcion" class="App\Controllers\ControllersTest" classname="App.Controllers.ControllersTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ControllersTest.php" line="117" assertions="2" time="0.611110"/>
+    <testcase name="test" class="App\Controllers\ControllersTest" classname="App.Controllers.ControllersTest" file="/var/www/webs/api_Ionic/tests/app/Controllers/ControllersTest.php" line="25" assertions="1" time="0.617866"/>
   </testsuite>
 </testsuites>
