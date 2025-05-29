@@ -27,6 +27,7 @@ class DataController extends BaseController
     //https://apirest.saicasl.eu/api1/api/public -- https://vault-ci4-api.up.railway.app -- https://api-vault.onrender.com
     private $baseUrlHost;
 
+    /*CONSTRUCTOR*/
     public function __construct()
     {
         $this->apiKeyValidator = new ApiKeyValidator();
@@ -50,6 +51,9 @@ class DataController extends BaseController
         $this->response = $response;
     }
 
+    /**
+     * Retorna todos los videojuegos registrados en la base de datos
+     */
     public function recibirJuegos()
     {
 
@@ -78,6 +82,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Retorna los datos de un videojuego específico por su ID
+     */
     public function recibirDatosJuego($id)
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -104,6 +111,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Maneja el proceso de inicio de sesión de un administrador
+     */
     public function inicioSesion()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -153,6 +163,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Devuelve la lista de géneros almacenados en la base de datos
+     */
     public function recibirGeneros()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -182,6 +195,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Devuelve la lista de plataformas disponibles
+     */
     public function recibirPlataformas()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -211,6 +227,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Retorna todas las tiendas registradas
+     */
     public function recibirTiendas()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -240,6 +259,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Obtiene la lista completa de desarrolladoras
+     */
     public function recibirDesarrolladoras()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -269,6 +291,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Recupera la lista de publishers disponibles
+     */
     public function recibirPublishers()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -298,15 +323,9 @@ class DataController extends BaseController
         }
     }
 
-    /*
-    SELECT * 
-    FROM vault.videojuegos
-    WHERE EXISTS (
-        SELECT 1
-        FROM jsonb_array_elements(generos) AS item
-        WHERE LOWER(item->>'nombre') LIKE LOWER('%Action%')
-    );
-    */
+    /**
+     * Retorna videojuegos filtrados por categoría y nombre del registro de dicha categoria
+     */
     public function recibirJuegosFiltrados($categoria, $nombre)
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -356,6 +375,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Elimina un videojuego de la base de datos y, si corresponde, también elimina su imagen de Cloudinary
+     */
     public function eliminarJuego()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -411,6 +433,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Recupera los datos necesarios para poblar el formulario de creación/edición de videojuegos
+     */
     public function obtenerDatosFormulario()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -444,6 +469,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Agrega un nuevo videojuego a la base de datos y sube su imagen a Cloudinary
+     */
     public function agregarJuego()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -525,6 +553,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Crea una nueva cuenta de administrador con nombre y contraseña encriptada
+     */
     public function crearAdministrador()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -580,6 +611,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Edita los datos de un videojuego existente. Puede actualizar también su imagen en Cloudinary
+     */
     public function editarJuego()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -665,6 +699,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Obtiene la lista de videojuegos creados por administradores
+     */
     public function recibirJuegosAdmin()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -694,6 +731,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Realiza una búsqueda de videojuegos cuyo nombre contenga el texto dado
+     */
     public function realizarBusqueda()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -727,6 +767,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Realiza una búsqueda de desarrolladoras cuyo nombre contenga el texto dado
+     */
     public function realizarBusquedaDesarrolladoras()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -762,6 +805,9 @@ class DataController extends BaseController
         }
     }
 
+    /**
+     * Realiza una búsqueda de publishers cuyo nombre contenga el texto dado
+     */
     public function realizarBusquedaPublishers()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);

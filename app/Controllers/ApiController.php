@@ -15,6 +15,7 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Cloudinary\Cloudinary;
 
+//Controlador que gestiona la integración con la API externa RAWG y la base de datos
 class ApiController extends BaseController
 {
     protected $request;
@@ -25,8 +26,10 @@ class ApiController extends BaseController
     //https://apirest.saicasl.eu/api1/api/public -- https://vault-ci4-api.up.railway.app -- https://api-vault.onrender.com
     private $baseUrlHost;
 
+    /*CONSTRUCTOR*/
     public function __construct()
     {
+        //Inicialización de validación por API Key y modelos usados
         $this->apiKeyValidator = new ApiKeyValidator();
         $this->VideojuegoModelo = new VideojuegoModelo();
         $this->AdministradoresModelo = new AdministradoresModelo();
@@ -48,6 +51,10 @@ class ApiController extends BaseController
         $this->response = $response;
     }
 
+    /**
+     * Obtiene una lista de IDs de videojuegos desde la API RAWG.
+     * Se puede configurar el número de páginas y el tamaño por página.
+     */
     public function obtenerIdsJuegos_API()
     {
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
@@ -81,6 +88,10 @@ class ApiController extends BaseController
         return $ids;
     }
 
+    /**
+     * Dado un array de IDs, consulta la API y guarda cada videojuego en la base de datos.
+     * También serializa información relacionada como géneros, plataformas, etc
+     */
     public function rellenarTablaVideojuegos($idsJuegos)
     {
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
@@ -215,7 +226,9 @@ class ApiController extends BaseController
         return $this->response->setJSON(['mensaje' => 'Datos cargados en la base de datos correctamente']);
     }
 
-    //TRUNCATE nombre_de_tu_tabla RESTART IDENTITY; RESETEAR AUTO INCREMENTAR
+    /**
+     * Borra datos existentes (salvo los creados por administradores) y carga nuevos datos desde la API
+     */
     public function actualizarDatosAPI()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -255,6 +268,9 @@ class ApiController extends BaseController
         }
     }
 
+    /**
+     * Carga y guarda datos de géneros desde RAWG
+     */
     public function rellenarTablaGeneros()
     {
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
@@ -295,6 +311,9 @@ class ApiController extends BaseController
         $db->transComplete();
     }
 
+    /**
+     * Carga y guarda datos de desarrolladoras desde RAWG
+     */
     public function rellenarTablaDesarrolladoras()
     {
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
@@ -340,6 +359,9 @@ class ApiController extends BaseController
         $db->transComplete();
     }
 
+    /**
+     * Carga y guarda datos de plataformas desde RAWG
+     */
     public function rellenarTablaPlataformas()
     {
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
@@ -383,6 +405,9 @@ class ApiController extends BaseController
         $db->transComplete();
     }
 
+    /**
+     * Carga y guarda datos de publishers desde RAWG
+     */
     public function rellenarTablaPublishers()
     {
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
@@ -429,6 +454,9 @@ class ApiController extends BaseController
         $db->transComplete();
     }
 
+    /**
+     * Carga y guarda datos de tiendas desde RAWG
+     */
     public function rellenarTablaTiendas()
     {
         $apiKey = "a9a117515a694c0fa91d404dd5ede441";
@@ -470,6 +498,9 @@ class ApiController extends BaseController
         $db->transComplete();
     }
 
+    /**
+     * Elimina videojuegos no creados por administradores y reinicia los ID de las tablas
+     */
     public function eliminarDatosActualizar()
     {
         $db = \Config\Database::connect();
@@ -499,6 +530,10 @@ class ApiController extends BaseController
         }
     }
 
+    /**
+     * Resetea todos los datos de la base de datos, eliminando todos los datos e imágenes
+     * de Cloudinary para luego reinsertarlo todo
+     */
     public function purgarDatos()
     {
         $resultadoValidacion = $this->apiKeyValidator->validar($this->request, $this->response);
@@ -555,6 +590,10 @@ class ApiController extends BaseController
         }
     }
 
+    /**
+     * Trunca completamente las tablas de la base de datos, reseteando los IDs y
+     * eliminando los datos
+     */
     public function eliminarDatosPurgar()
     {
         $db = \Config\Database::connect();
@@ -576,6 +615,9 @@ class ApiController extends BaseController
         }
     }
 
+    /**
+     * Obtiene el AppID de un juego específico desde la API pública de Steam
+     */
     public function obtenerAppId()
     {
         ini_set("post_max_size", -1);
@@ -639,6 +681,9 @@ class ApiController extends BaseController
         }
     }
 
+    /**
+     * Normaliza el nombre de un juego para facilitar la comparación
+     */
     private function normalizarNombre($nombre)
     {
 

@@ -66,6 +66,9 @@ abstract class BaseController extends Controller
         return $this->response->setStatusCode($code)->setJSON($responseBody);
     }
 
+    /**
+     * Extrae el public ID de una URL de Cloudinary.
+     */
     protected function extraerPublicIdDesdeUrl($url)
     {
         $parsed = parse_url($url);
