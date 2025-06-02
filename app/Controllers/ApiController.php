@@ -23,7 +23,7 @@ class ApiController extends BaseController
 
     public $apiKeyValidator;
 
-    //https://apirest.saicasl.eu/api1/api/public -- https://vault-ci4-api.up.railway.app -- https://api-vault.onrender.com
+    //https://apirest.saicasl.eu/api1/api/public -- https://api-vault.onrender.com
     private $baseUrlHost;
 
     /*CONSTRUCTOR*/

@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Base\BaseTestCase;
 use App\Models\VideojuegoModelo;
+use Config\Services;
+use CodeIgniter\HTTP\IncomingRequest;
 
 class ControllersTest extends BaseTestCase
 {
@@ -159,7 +161,6 @@ class ControllersTest extends BaseTestCase
     {
         $logger = $this->get_logger("RecibirGeneros_");
 
-        // Mock del modelo GeneroModelo
         $generoModelo = $this->createMock(\App\Models\GeneroModelo::class);
         $generosPrueba = [
             ['id' => 1, 'nombre' => 'Acción', 'cantidad_juegos' => 25],
@@ -167,11 +168,9 @@ class ControllersTest extends BaseTestCase
         ];
         $generoModelo->method('findAll')->willReturn($generosPrueba);
 
-        // Mock del validador de API Key
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
 
-        // Instanciar el controlador y configurar dependencias
         $controller = new \App\Controllers\DataController();
         $controller->GeneroModelo = $generoModelo;
         $controller->apiKeyValidator = $apiKeyValidator;
@@ -181,7 +180,6 @@ class ControllersTest extends BaseTestCase
         $controller->setRequest($request);
         $controller->setResponse($response);
 
-        // Ejecutar
         $response = $controller->recibirGeneros();
 
         try {
@@ -200,7 +198,6 @@ class ControllersTest extends BaseTestCase
     {
         $logger = $this->get_logger("RecibirPlataformas_");
 
-        // Mock del modelo PlataformaModelo
         $plataformaModelo = $this->createMock(\App\Models\PlataformaModelo::class);
         $plataformasPrueba = [
             ['id' => 1, 'nombre' => 'PlayStation 5'],
@@ -208,11 +205,9 @@ class ControllersTest extends BaseTestCase
         ];
         $plataformaModelo->method('findAll')->willReturn($plataformasPrueba);
 
-        // Mock del validador de API Key
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
 
-        // Instanciar el controlador y configurar dependencias
         $controller = new \App\Controllers\DataController();
         $controller->PlataformaModelo = $plataformaModelo;
         $controller->apiKeyValidator = $apiKeyValidator;
@@ -222,7 +217,6 @@ class ControllersTest extends BaseTestCase
         $controller->setRequest($request);
         $controller->setResponse($response);
 
-        // Ejecutar
         $response = $controller->recibirPlataformas();
 
         try {
@@ -241,7 +235,6 @@ class ControllersTest extends BaseTestCase
     {
         $logger = $this->get_logger("RecibirTiendas_");
 
-        // Mock del modelo TiendaModelo
         $tiendaModelo = $this->createMock(\App\Models\TiendaModelo::class);
         $tiendasPrueba = [
             ['id' => 1, 'nombre' => 'Steam'],
@@ -249,11 +242,9 @@ class ControllersTest extends BaseTestCase
         ];
         $tiendaModelo->method('findAll')->willReturn($tiendasPrueba);
 
-        // Mock del validador de API Key
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
 
-        // Instanciar el controlador y configurar dependencias
         $controller = new \App\Controllers\DataController();
         $controller->TiendaModelo = $tiendaModelo;
         $controller->apiKeyValidator = $apiKeyValidator;
@@ -263,7 +254,6 @@ class ControllersTest extends BaseTestCase
         $controller->setRequest($request);
         $controller->setResponse($response);
 
-        // Ejecutar
         $response = $controller->recibirTiendas();
 
         try {
@@ -282,7 +272,6 @@ class ControllersTest extends BaseTestCase
     {
         $logger = $this->get_logger("RecibirDesarrolladoras_");
 
-        // Mock del modelo DesarrolladoraModelo
         $desarrolladoraModelo = $this->createMock(\App\Models\DesarrolladoraModelo::class);
         $desarrolladorasPrueba = [
             ['id' => 1, 'nombre' => 'Naughty Dog'],
@@ -290,11 +279,9 @@ class ControllersTest extends BaseTestCase
         ];
         $desarrolladoraModelo->method('findAll')->willReturn($desarrolladorasPrueba);
 
-        // Mock del validador de API Key
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
 
-        // Instanciar el controlador y configurar dependencias
         $controller = new \App\Controllers\DataController();
         $controller->DesarrolladoraModelo = $desarrolladoraModelo;
         $controller->apiKeyValidator = $apiKeyValidator;
@@ -304,7 +291,6 @@ class ControllersTest extends BaseTestCase
         $controller->setRequest($request);
         $controller->setResponse($response);
 
-        // Ejecutar
         $response = $controller->recibirDesarrolladoras();
 
         try {
@@ -323,7 +309,6 @@ class ControllersTest extends BaseTestCase
     {
         $logger = $this->get_logger("RecibirPublishers_");
 
-        // Mock del modelo PublisherModelo
         $publisherModelo = $this->createMock(\App\Models\PublisherModelo::class);
         $publishersPrueba = [
             ['id' => 1, 'nombre' => 'Ubisoft'],
@@ -331,11 +316,9 @@ class ControllersTest extends BaseTestCase
         ];
         $publisherModelo->method('findAll')->willReturn($publishersPrueba);
 
-        // Mock del validador de API Key
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
 
-        // Instanciar el controlador y configurar dependencias
         $controller = new \App\Controllers\DataController();
         $controller->PublisherModelo = $publisherModelo;
         $controller->apiKeyValidator = $apiKeyValidator;
@@ -345,7 +328,6 @@ class ControllersTest extends BaseTestCase
         $controller->setRequest($request);
         $controller->setResponse($response);
 
-        // Ejecutar
         $response = $controller->recibirPublishers();
 
         try {
@@ -364,7 +346,6 @@ class ControllersTest extends BaseTestCase
     {
         $logger = $this->get_logger("EliminarJuego_");
 
-        // Mock del modelo VideojuegoModelo
         $videojuegoModelo = $this->createMock(\App\Models\VideojuegoModelo::class);
 
         $juegoSimulado = [
@@ -376,16 +357,13 @@ class ControllersTest extends BaseTestCase
         $videojuegoModelo->method('find')->with(1)->willReturn($juegoSimulado);
         $videojuegoModelo->method('delete')->with(1)->willReturn(true); // Simular delete sin ejecutar
 
-        // Mock del validador de API Key
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
 
-        // Instanciar el controlador
         $controller = new \App\Controllers\DataController();
         $controller->VideojuegoModelo = $videojuegoModelo;
         $controller->apiKeyValidator = $apiKeyValidator;
 
-        // Preparar petición simulada
         $request = \Config\Services::request();
         $body = json_encode(['id' => 1]);
         $request->setBody($body);
@@ -395,7 +373,6 @@ class ControllersTest extends BaseTestCase
         $controller->setRequest($request);
         $controller->setResponse($response);
 
-        // Ejecutar
         $response = $controller->eliminarJuego();
 
         try {
@@ -412,14 +389,12 @@ class ControllersTest extends BaseTestCase
     {
         $logger = $this->get_logger("ObtenerDatosFormulario_");
 
-        // Datos simulados
         $tiendas = [['id' => 1, 'nombre' => 'Steam']];
         $plataformas = [['id' => 1, 'nombre' => 'PC']];
         $generos = [['id' => 1, 'nombre' => 'Acción']];
         $desarrolladoras = [['id' => 1, 'nombre' => 'Ubisoft']];
         $publishers = [['id' => 1, 'nombre' => 'EA']];
 
-        // Mock de cada modelo
         $tiendaModelo = $this->createMock(\App\Models\TiendaModelo::class);
         $tiendaModelo->method('findAll')->willReturn($tiendas);
 
@@ -435,11 +410,9 @@ class ControllersTest extends BaseTestCase
         $publisherModelo = $this->createMock(\App\Models\PublisherModelo::class);
         $publisherModelo->method('findAll')->willReturn($publishers);
 
-        // Mock del validador de API Key
         $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
         $apiKeyValidator->method('validar')->willReturn(true);
 
-        // Instancia y configuración del controlador
         $controller = new \App\Controllers\DataController();
         $controller->TiendaModelo = $tiendaModelo;
         $controller->PlataformaModelo = $plataformaModelo;
@@ -453,7 +426,6 @@ class ControllersTest extends BaseTestCase
         $controller->setRequest($request);
         $controller->setResponse($response);
 
-        // Ejecutar
         $response = $controller->obtenerDatosFormulario();
         $body = json_decode($response->getBody(), true);
 
@@ -472,7 +444,38 @@ class ControllersTest extends BaseTestCase
         }
     }
 
-    
+    public function testRecibirJuegosAdminDevuelveLista()
+    {
+        $controller = new \App\Controllers\DataController();
 
+        $request = Services::request();
+        $response = Services::response();
+
+        $controller->setRequest($request);
+        $controller->setResponse($response);
+
+        $controller->VideojuegoModelo = new \App\Models\VideojuegoModelo();
+
+        $controller->apiKeyValidator = new class {
+            public function validar($req, $res)
+            {
+                return true;
+            }
+        };
+
+        $resultado = $controller->recibirJuegosAdmin();
+
+        $this->assertInstanceOf(\CodeIgniter\HTTP\ResponseInterface::class, $resultado);
+        $this->assertTrue(in_array($resultado->getStatusCode(), [200, 404]));
+
+        $json = json_decode($resultado->getBody(), true);
+        $this->assertIsArray($json);
+
+        if ($resultado->getStatusCode() === 200) {
+            $this->assertArrayHasKey('juegos', $json);
+        } else {
+            $this->assertArrayHasKey('error', $json);
+        }
+    }
 
 }

@@ -11,5 +11,6 @@ Controllers (App\Controllers\Controllers)
  [x] Recibir publishers
  [x] Eliminar juego
  [x] Obtener datos formulario
+ [x] Recibir juegos admin devuelve lista
  [x] 
 
