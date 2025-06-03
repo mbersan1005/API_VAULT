@@ -32,8 +32,14 @@ Controllers (App\Controllers\Controllers)
  [x] RecibirPublishers empty
  [x] RecibirPublishers successful
  [x] RecibirPublishers exception
- [x] Eliminar juego
- [x] Obtener datos formulario
+ [x] EliminarJuego invalidApiKey
+ [x] EliminarJuego noIdProvided
+ [x] EliminarJuego gameNotFound
+ [x] EliminarJuego successful
+ [x] EliminarJuego exception
+ [x] ObtenerDatosFormulario invalidApiKey
+ [x] ObtenerDatosFormulario successful
+ [x] ObtenerDatosFormulario exception
  [x] Recibir juegos admin devuelve lista
  [x] ObtenerIdsJuegos API
  [x] 
