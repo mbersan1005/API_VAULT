@@ -5,342 +5,1445 @@ namespace App\Controllers;
 use App\Base\BaseTestCase;
 use App\Models\VideojuegoModelo;
 use Config\Services;
-use CodeIgniter\HTTP\IncomingRequest;
+use App\Services\ApiKeyValidator;
+use Exception;
+use App\Controllers\DataController;
 
 class ControllersTest extends BaseTestCase
 {
-
-    public function testObtenerIdsJuegos_API()
+        
+    /**
+     * Inicializa el controlador con request, response y logger.
+     */
+    private function initController(DataController $controller): void
     {
-        $logger = $this->get_logger("ObtenerIdsJuegos_API_");
-
-        $controller = new \App\Controllers\ApiController();
-        $ids = $controller->obtenerIdsJuegos_API();
-
-        if (is_array($ids) && !empty($ids) && is_int($ids[0])) {
-            $logger->log('info', "RESULTADO CORRECTO: Se obtuvo una lista de IDs de juegos correctamente.");
-            $this->assertTrue(true, "La función devolverá un array no vacío de IDs enteros.");
-        } else {
-            $logger->log('error', "ERROR: No se obtuvo la lista de IDs correctamente.");
-            $this->fail('La función no devolvió la lista de IDs correctamente.');
-        }
+        // Aseguramos que se inicialicen las propiedades necesarias del controlador.
+        $controller->initController(
+            Services::request(),
+            Services::response(),
+            Services::logger()
+        );
     }
 
-    public function testRecibirJuegos()
+    /**
+     * Inyecta un valor en una propiedad protegida de un objeto usando Reflection.
+     *
+     * @param object $object    Objeto al que se inyecta la propiedad.
+     * @param string $property  Nombre de la propiedad.
+     * @param mixed  $value     Valor a inyectar.
+     */
+    private function setProtectedProperty(object $object, string $property, $value): void
     {
-        $logger = $this->get_logger("RecibirJuegos_");
+        $reflection = new \ReflectionClass($object);
+        $prop = $reflection->getProperty($property);
+        $prop->setAccessible(true);
+        $prop->setValue($object, $value);
+    }
 
-        $videojuegoModelo = $this->createMock(VideojuegoModelo::class);
-
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
-        $apiKeyValidator->method('validar')->willReturn(true);
-
+    /**
+     * Test: API key inválida.
+     */
+    public function testRecibirJuegos_invalidApiKey()
+    {
         $controller = new DataController();
-        $controller->VideojuegoModelo = $videojuegoModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        $this->initController($controller);
 
-        $request = \Config\Services::request();
-        $response = \Config\Services::response();
-        $controller->setRequest($request);
-        $controller->setResponse($response);
+        // Creamos un fake response usando el servicio de response.
+        $fakeResponse = Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
 
-        $juegosPrueba = [
-            [
-                'id' => 1,
-                'nombre' => 'Juego 1',
-                'nota_metacritic' => 85,
-                'fecha_lanzamiento' => '2023-01-01',
-                'sitio_web' => 'https://juego1.com',
-                'imagen' => 'juego1.jpg',
-                'plataformas_principales' => 'PC',
-                'desarrolladoras' => 'Desarrolladora A',
-                'publishers' => 'Publisher A',
-                'tiendas' => 'Steam',
-                'generos' => 'Acción',
-                'descripcion' => 'Descripción del juego 1',
-                'creado_por_admin' => 0
-            ],
-            [
-                'id' => 2,
-                'nombre' => 'Juego 2',
-                'nota_metacritic' => 78,
-                'fecha_lanzamiento' => '2023-05-01',
-                'sitio_web' => 'https://juego2.com',
-                'imagen' => 'juego2.jpg',
-                'plataformas_principales' => 'PS5',
-                'desarrolladoras' => 'Desarrolladora B',
-                'publishers' => 'Publisher B',
-                'tiendas' => 'PlayStation Store',
-                'generos' => 'Aventura',
-                'descripcion' => 'Descripción del juego 2',
-                'creado_por_admin' => 0
-            ]
+        // Creamos el mock de ApiKeyValidator para forzar una validación fallida.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+
+        $controller->apiKeyValidator = $mockValidator;
+        // No es necesario configurar el modelo puesto que la validación se detiene antes.
+
+        $result = $controller->recibirJuegos();
+
+        // Obtenemos y decodificamos el contenido JSON
+        $body = $result->getBody();
+        $data = json_decode($body, true);
+
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
+    }
+
+    /**
+     * Test: API key válida pero no existen videojuegos.
+     */
+    public function testRecibirJuegos_noJuegos()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Configuramos el mock para la validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos al modelo devolviendo un array vacío.
+        $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+
+        $mockModelo->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
+
+        $controller->VideojuegoModelo = $mockModelo;
+
+        $result = $controller->recibirJuegos();
+
+        $body = $result->getBody();
+        $data = json_decode($body, true);
+
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('mensaje', $data);
+        $this->assertEquals('No se encontraron videojuegos', $data['mensaje']);
+    }
+
+    /**
+     * Test: API key válida y existen videojuegos.
+     */
+    public function testRecibirJuegos_withJuegos()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Configuramos el mock para la validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Creamos un array simulando videojuegos.
+        $juegosArray = [
+            ['id' => 1, 'nombre' => 'Juego1'],
+            ['id' => 2, 'nombre' => 'Juego2']
         ];
-        $videojuegoModelo->method('findAll')->willReturn($juegosPrueba);
 
-        $response = $controller->recibirJuegos();
+        // Simulamos al modelo devolviendo videojuegos.
+        $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
 
-        try {
-            $this->assertEquals(200, $response->getStatusCode());
-            $this->assertStringContainsString('Juego 1', $response->getBody());
-            $this->assertStringContainsString('Juego 2', $response->getBody());
+        $mockModelo->expects($this->once())
+            ->method('findAll')
+            ->willReturn($juegosArray);
 
-            $logger->log('info', 'RESULTADO CORRECTO: Se recibieron los juegos correctamente.');
-        } catch (\PHPUnit\Framework\AssertionFailedError $e) {
-            $logger->log('error', 'ERROR: Falló la recepción de juegos - ' . $e->getMessage());
-            throw $e;
-        }
+        $controller->VideojuegoModelo = $mockModelo;
+
+        $result = $controller->recibirJuegos();
+
+        $body = $result->getBody();
+        $data = json_decode($body, true);
+
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('juegos', $data);
+        $this->assertEquals($juegosArray, $data['juegos']);
     }
 
-    public function testRecibirDatosJuego_Exito()
+    /**
+     * Test: Excepción al obtener los juegos (error en findAll).
+     */
+    public function testRecibirJuegos_exceptionInFindAll()
     {
-        $videojuegoModelo = $this->createMock(\App\Models\VideojuegoModelo::class);
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $apiKeyValidator->method('validar')->willReturn(true);
+        // Configuramos el mock para la validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
 
-        $juegoSimulado = ['id' => 1, 'nombre' => 'Test Game'];
-        $videojuegoModelo->method('find')->willReturn($juegoSimulado);
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
 
-        $controller = new \App\Controllers\DataController();
-        $controller->VideojuegoModelo = $videojuegoModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        // Configuramos el modelo para que lance una excepción.
+        $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
 
-        $controller->setRequest(\Config\Services::request());
-        $controller->setResponse(\Config\Services::response());
+        $mockModelo->expects($this->once())
+            ->method('findAll')
+            ->will($this->throwException(new Exception("Database error")));
 
-        $response = $controller->recibirDatosJuego(1);
+        $controller->VideojuegoModelo = $mockModelo;
 
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertStringContainsString('Test Game', $response->getBody());
+        $result = $controller->recibirJuegos();
+
+        $body = $result->getBody();
+        $data = json_decode($body, true);
+
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error al recuperar los datos', $data['error']);
     }
 
-    public function testRecibirDatosJuego_NoEncontrado()
+    /**
+     * Test: API Key inválida.
+     *
+     * Se simula que la validación falla y se retorna un objeto Response con error 401.
+     */
+    public function testRecibirDatosJuego_invalidApiKey()
     {
-        $videojuegoModelo = $this->createMock(\App\Models\VideojuegoModelo::class);
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $apiKeyValidator->method('validar')->willReturn(true);
-        $videojuegoModelo->method('find')->willReturn(null);
+        // Creamos una respuesta falsa de error por API key inválida.
+        $fakeResponse = Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
 
-        $controller = new \App\Controllers\DataController();
-        $controller->VideojuegoModelo = $videojuegoModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+        $controller->apiKeyValidator = $mockValidator;
+        // No es necesario configurar VideojuegoModelo ya que la validación no continúa.
 
-        $controller->setRequest(\Config\Services::request());
-        $controller->setResponse(\Config\Services::response());
+        $result = $controller->recibirDatosJuego(1);
+        $data = json_decode($result->getBody(), true);
 
-        $response = $controller->recibirDatosJuego(999);
-
-        $this->assertEquals(404, $response->getStatusCode());
-        $this->assertStringContainsString('No se encontró', $response->getBody());
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
     }
 
-    public function testRecibirDatosJuego_Excepcion()
+    /**
+     * Test: Juego encontrado.
+     *
+     * Se simula que el modelo retorna un juego existente.
+     */
+    public function testRecibirDatosJuego_found()
     {
-        $videojuegoModelo = $this->createMock(\App\Models\VideojuegoModelo::class);
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $apiKeyValidator->method('validar')->willReturn(true);
-        $videojuegoModelo->method('find')->willThrowException(new \Exception('DB error'));
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
 
-        $controller = new \App\Controllers\DataController();
-        $controller->VideojuegoModelo = $videojuegoModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        // Simulación del juego encontrado.
+        $expectedGame = ['id' => 1, 'nombre' => 'Juego Uno', 'genero' => 'Acción'];
 
-        $controller->setRequest(\Config\Services::request());
-        $controller->setResponse(\Config\Services::response());
+        $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['find'])
+            ->getMock();
+        $mockModelo->expects($this->once())
+            ->method('find')
+            ->with(1)
+            ->willReturn($expectedGame);
+        $controller->VideojuegoModelo = $mockModelo;
 
-        $response = $controller->recibirDatosJuego(1);
+        $result = $controller->recibirDatosJuego(1);
+        $data = json_decode($result->getBody(), true);
 
-        $this->assertEquals(500, $response->getStatusCode());
-        $this->assertStringContainsString('Ocurrió un error', $response->getBody());
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('juego', $data);
+        $this->assertEquals($expectedGame, $data['juego']);
     }
 
-    public function testRecibirGeneros()
+    /**
+     * Test: Juego no encontrado.
+     *
+     * Se simula que el modelo no encuentra ningún juego para el ID proporcionado.
+     */
+    public function testRecibirDatosJuego_notFound()
     {
-        $logger = $this->get_logger("RecibirGeneros_");
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $generoModelo = $this->createMock(\App\Models\GeneroModelo::class);
-        $generosPrueba = [
-            ['id' => 1, 'nombre' => 'Acción', 'cantidad_juegos' => 25],
-            ['id' => 2, 'nombre' => 'Aventura', 'cantidad_juegos' => 18]
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Configuramos el modelo para que retorne null (no encontrado)
+        $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['find'])
+            ->getMock();
+        $mockModelo->expects($this->once())
+            ->method('find')
+            ->with(999)
+            ->willReturn(null);
+        $controller->VideojuegoModelo = $mockModelo;
+
+        $result = $controller->recibirDatosJuego(999);
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(404, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('No se encontró videojuego con ese ID', $data['error']);
+    }
+
+    /**
+     * Test: Excepción al obtener el juego.
+     *
+     * Se simula que el método find lanza una excepción, por lo que se debe retornar un error 500.
+     */
+    public function testRecibirDatosJuego_exception()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Configuramos el modelo para que lance una excepción.
+        $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['find'])
+            ->getMock();
+        $mockModelo->expects($this->once())
+            ->method('find')
+            ->with(1)
+            ->will($this->throwException(new Exception("Database failure")));
+        $controller->VideojuegoModelo = $mockModelo;
+
+        $result = $controller->recibirDatosJuego(1);
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error al recuperar los datos del juego', $data['error']);
+    }
+
+
+    /**
+     * Test: API Key inválida.
+     */
+    public function testInicioSesion_invalidApiKey()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Simulamos una respuesta de error por API key inválida.
+        $fakeResponse = Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
+
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+        $controller->apiKeyValidator = $mockValidator;
+        // No es necesario configurar AdministradoresModelo en este caso.
+
+        // Ejecutamos el método
+        $result = $controller->inicioSesion();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
+    }
+
+    /**
+     * Test: Usuario no encontrado.
+     */
+    public function testInicioSesion_usuarioNoEncontrado()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Datos de inicio de sesión que se enviarán en el request.
+        $inputData = ['nombre' => 'nonexistent', 'password' => 'any'];
+
+        // Simulamos el método getJSON() del request con un stub.
+        $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getJSON'])
+            ->getMock();
+        $fakeRequest->expects($this->once())
+            ->method('getJSON')
+            ->with(true)
+            ->willReturn($inputData);
+        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        $this->setProtectedProperty($controller, 'request', $fakeRequest);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos la consulta en el modelo:
+        // Al llamar ->where('nombre', 'nonexistent')->first() se retorna null.
+        $mockQuery = $this->getMockBuilder('stdClass')
+            ->disableOriginalConstructor()
+            ->addMethods(['first'])
+            ->getMock();
+        $mockQuery->expects($this->once())
+            ->method('first')
+            ->willReturn(null);
+
+        // En lugar de onlyMethods, usamos addMethods para agregar "where" al mock,
+        // ya que AdministradoresModelo no tiene declarado "where".
+        $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
+            ->disableOriginalConstructor()
+            ->addMethods(['where'])
+            ->getMock();
+        $mockAdminModel->expects($this->once())
+            ->method('where')
+            ->with('nombre', 'nonexistent')
+            ->willReturn($mockQuery);
+        $controller->AdministradoresModelo = $mockAdminModel;
+
+        // Ejecutamos el método.
+        $result = $controller->inicioSesion();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(404, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Usuario no encontrado', $data['error']);
+    }
+
+    /**
+     * Test: Contraseña incorrecta.
+     */
+    public function testInicioSesion_incorrectPassword()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        $inputData = ['nombre' => 'user', 'password' => 'wrongPassword'];
+
+        // Stub para getJSON() que retorna los datos de entrada.
+        $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getJSON'])
+            ->getMock();
+        $fakeRequest->expects($this->once())
+            ->method('getJSON')
+            ->with(true)
+            ->willReturn($inputData);
+        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        $this->setProtectedProperty($controller, 'request', $fakeRequest);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos un administrador encontrado.
+        // La contraseña almacenada se genera a partir de 'correctPassword'.
+        $adminRecord = [
+            'id'             => 2,
+            'nombre'         => 'user',
+            'password'       => password_hash('correctPassword', PASSWORD_DEFAULT),
+            'fecha_creacion' => '2022-01-01 00:00:00'
         ];
-        $generoModelo->method('findAll')->willReturn($generosPrueba);
 
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
-        $apiKeyValidator->method('validar')->willReturn(true);
+        $mockQuery = $this->getMockBuilder('stdClass')
+            ->disableOriginalConstructor()
+            ->addMethods(['first'])
+            ->getMock();
+        $mockQuery->expects($this->once())
+            ->method('first')
+            ->willReturn($adminRecord);
 
-        $controller = new \App\Controllers\DataController();
-        $controller->GeneroModelo = $generoModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        // Usamos addMethods para agregar "where" (ya que no existe explícitamente).
+        $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
+            ->disableOriginalConstructor()
+            ->addMethods(['where'])
+            ->getMock();
+        $mockAdminModel->expects($this->once())
+            ->method('where')
+            ->with('nombre', 'user')
+            ->willReturn($mockQuery);
+        $controller->AdministradoresModelo = $mockAdminModel;
 
-        $request = \Config\Services::request();
-        $response = \Config\Services::response();
-        $controller->setRequest($request);
-        $controller->setResponse($response);
+        // Ejecutamos el método y esperamos que la verificación de password falle.
+        $result = $controller->inicioSesion();
+        $data = json_decode($result->getBody(), true);
 
-        $response = $controller->recibirGeneros();
-
-        try {
-            $this->assertEquals(200, $response->getStatusCode());
-            $this->assertStringContainsString('Acción', $response->getBody());
-            $this->assertStringContainsString('Aventura', $response->getBody());
-
-            $logger->log('info', 'RESULTADO CORRECTO: Se recibieron los géneros correctamente.');
-        } catch (\PHPUnit\Framework\AssertionFailedError $e) {
-            $logger->log('error', 'ERROR: Falló la recepción de géneros - ' . $e->getMessage());
-            throw $e;
-        }
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Contraseña incorrecta', $data['error']);
     }
 
-    public function testRecibirPlataformas()
+    /**
+     * Test: Inicio de sesión exitoso.
+     */
+    public function testInicioSesion_successful()
     {
-        $logger = $this->get_logger("RecibirPlataformas_");
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $plataformaModelo = $this->createMock(\App\Models\PlataformaModelo::class);
-        $plataformasPrueba = [
-            ['id' => 1, 'nombre' => 'PlayStation 5'],
-            ['id' => 2, 'nombre' => 'Xbox Series X']
+        $inputData = ['nombre' => 'user', 'password' => 'password123'];
+
+        // Simulamos el request que retorna el JSON de entrada.
+        $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getJSON'])
+            ->getMock();
+        $fakeRequest->expects($this->once())
+            ->method('getJSON')
+            ->with(true)
+            ->willReturn($inputData);
+        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        $this->setProtectedProperty($controller, 'request', $fakeRequest);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Preparamos el registro del administrador.
+        $adminRecord = [
+            'id'             => 1,
+            'nombre'         => 'user',
+            'password'       => password_hash('password123', PASSWORD_DEFAULT),
+            'fecha_creacion' => '2022-01-01 00:00:00'
         ];
-        $plataformaModelo->method('findAll')->willReturn($plataformasPrueba);
 
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
-        $apiKeyValidator->method('validar')->willReturn(true);
+        // Simulamos el método where()->first()
+        $mockQuery = $this->getMockBuilder('stdClass')
+            ->disableOriginalConstructor()
+            ->addMethods(['first'])
+            ->getMock();
+        $mockQuery->expects($this->once())
+            ->method('first')
+            ->willReturn($adminRecord);
 
-        $controller = new \App\Controllers\DataController();
-        $controller->PlataformaModelo = $plataformaModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        // En este caso, queremos controlar además el método update.
+        $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
+            ->disableOriginalConstructor()
+            ->addMethods(['where'])
+            ->onlyMethods(['update'])
+            ->getMock();
+        $mockAdminModel->expects($this->once())
+            ->method('where')
+            ->with('nombre', 'user')
+            ->willReturn($mockQuery);
+        $mockAdminModel->expects($this->once())
+            ->method('update')
+            ->with(
+                $adminRecord['id'],
+                $this->callback(function ($param) {
+                    return isset($param['fecha_ultimo_login']) && !empty($param['fecha_ultimo_login']);
+                })
+            );
+        $controller->AdministradoresModelo = $mockAdminModel;
 
-        $request = \Config\Services::request();
-        $response = \Config\Services::response();
-        $controller->setRequest($request);
-        $controller->setResponse($response);
+        // Ejecutamos el método.
+        $result = $controller->inicioSesion();
+        $data = json_decode($result->getBody(), true);
 
-        $response = $controller->recibirPlataformas();
-
-        try {
-            $this->assertEquals(200, $response->getStatusCode());
-            $this->assertStringContainsString('PlayStation 5', $response->getBody());
-            $this->assertStringContainsString('Xbox Series X', $response->getBody());
-
-            $logger->log('info', 'RESULTADO CORRECTO: Se recibieron las plataformas correctamente.');
-        } catch (\PHPUnit\Framework\AssertionFailedError $e) {
-            $logger->log('error', 'ERROR: Falló la recepción de plataformas - ' . $e->getMessage());
-            throw $e;
-        }
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('mensaje', $data);
+        $this->assertEquals('Inicio de sesión exitoso', $data['mensaje']);
+        $this->assertArrayHasKey('administrador', $data);
+        $this->assertEquals($adminRecord['id'], $data['administrador']['id']);
+        $this->assertEquals($adminRecord['nombre'], $data['administrador']['nombre']);
+        $this->assertEquals($adminRecord['fecha_creacion'], $data['administrador']['fecha_creacion']);
+        $this->assertArrayHasKey('fecha_ultimo_login', $data['administrador']);
+        $this->assertNotEmpty($data['administrador']['fecha_ultimo_login']);
     }
 
-    public function testRecibirTiendas()
+    /**
+     * Test: Excepción durante el inicio de sesión.
+     */
+    public function testInicioSesion_exception()
     {
-        $logger = $this->get_logger("RecibirTiendas_");
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $tiendaModelo = $this->createMock(\App\Models\TiendaModelo::class);
-        $tiendasPrueba = [
-            ['id' => 1, 'nombre' => 'Steam'],
-            ['id' => 2, 'nombre' => 'Epic Games Store']
-        ];
-        $tiendaModelo->method('findAll')->willReturn($tiendasPrueba);
+        $inputData = ['nombre' => 'user', 'password' => 'password123'];
 
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
-        $apiKeyValidator->method('validar')->willReturn(true);
+        // Simulamos el request que retorna el JSON de entrada.
+        $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getJSON'])
+            ->getMock();
+        $fakeRequest->expects($this->once())
+            ->method('getJSON')
+            ->with(true)
+            ->willReturn($inputData);
+        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        $controller = new \App\Controllers\DataController();
-        $controller->TiendaModelo = $tiendaModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
 
-        $request = \Config\Services::request();
-        $response = \Config\Services::response();
-        $controller->setRequest($request);
-        $controller->setResponse($response);
+        // Simulamos que ocurre una excepción al llamar a first().
+        $mockQuery = $this->getMockBuilder('stdClass')
+            ->disableOriginalConstructor()
+            ->addMethods(['first'])
+            ->getMock();
+        $mockQuery->expects($this->once())
+            ->method('first')
+            ->will($this->throwException(new Exception("DB error")));
 
-        $response = $controller->recibirTiendas();
+        // Aquí usamos addMethods para agregar "where" a AdministradoresModelo.
+        $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
+            ->disableOriginalConstructor()
+            ->addMethods(['where'])
+            ->getMock();
+        $mockAdminModel->expects($this->once())
+            ->method('where')
+            ->with('nombre', 'user')
+            ->willReturn($mockQuery);
+        $controller->AdministradoresModelo = $mockAdminModel;
 
-        try {
-            $this->assertEquals(200, $response->getStatusCode());
-            $this->assertStringContainsString('Steam', $response->getBody());
-            $this->assertStringContainsString('Epic Games Store', $response->getBody());
+        // Ejecutamos el método.
+        $result = $controller->inicioSesion();
+        $data = json_decode($result->getBody(), true);
 
-            $logger->log('info', 'RESULTADO CORRECTO: Se recibieron las tiendas correctamente.');
-        } catch (\PHPUnit\Framework\AssertionFailedError $e) {
-            $logger->log('error', 'ERROR: Falló la recepción de tiendas - ' . $e->getMessage());
-            throw $e;
-        }
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error en el inicio de sesión', $data['error']);
     }
 
-    public function testRecibirDesarrolladoras()
+    public function testRecibirGeneros_invalidApiKey()
     {
-        $logger = $this->get_logger("RecibirDesarrolladoras_");
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $desarrolladoraModelo = $this->createMock(\App\Models\DesarrolladoraModelo::class);
-        $desarrolladorasPrueba = [
-            ['id' => 1, 'nombre' => 'Naughty Dog'],
-            ['id' => 2, 'nombre' => 'CD Projekt RED']
-        ];
-        $desarrolladoraModelo->method('findAll')->willReturn($desarrolladorasPrueba);
+        // Simulamos una respuesta de error en la validación (por ejemplo, API Key inválida).
+        $fakeResponse = \Config\Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
 
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
-        $apiKeyValidator->method('validar')->willReturn(true);
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+        $controller->apiKeyValidator = $mockValidator;
 
-        $controller = new \App\Controllers\DataController();
-        $controller->DesarrolladoraModelo = $desarrolladoraModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        // Al retornar desde la validación fallida, no se requiere configurar GeneroModelo.
+        $result = $controller->recibirGeneros();
+        $data = json_decode($result->getBody(), true);
 
-        $request = \Config\Services::request();
-        $response = \Config\Services::response();
-        $controller->setRequest($request);
-        $controller->setResponse($response);
-
-        $response = $controller->recibirDesarrolladoras();
-
-        try {
-            $this->assertEquals(200, $response->getStatusCode());
-            $this->assertStringContainsString('Naughty Dog', $response->getBody());
-            $this->assertStringContainsString('CD Projekt RED', $response->getBody());
-
-            $logger->log('info', 'RESULTADO CORRECTO: Se recibieron las desarrolladoras correctamente.');
-        } catch (\PHPUnit\Framework\AssertionFailedError $e) {
-            $logger->log('error', 'ERROR: Falló la recepción de desarrolladoras - ' . $e->getMessage());
-            throw $e;
-        }
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
     }
 
-    public function testRecibirPublishers()
+    public function testRecibirGeneros_empty()
     {
-        $logger = $this->get_logger("RecibirPublishers_");
+        $controller = new DataController();
+        $this->initController($controller);
 
-        $publisherModelo = $this->createMock(\App\Models\PublisherModelo::class);
-        $publishersPrueba = [
-            ['id' => 1, 'nombre' => 'Ubisoft'],
-            ['id' => 2, 'nombre' => 'Electronic Arts']
-        ];
-        $publisherModelo->method('findAll')->willReturn($publishersPrueba);
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
 
-        $apiKeyValidator = $this->createMock(\App\Services\ApiKeyValidator::class);
-        $apiKeyValidator->method('validar')->willReturn(true);
+        // Simulamos que el método findAll() del modelo retorna un array vacío.
+        $mockGeneroModel = $this->getMockBuilder('App\Models\GeneroModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockGeneroModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
+        $controller->GeneroModelo = $mockGeneroModel;
 
-        $controller = new \App\Controllers\DataController();
-        $controller->PublisherModelo = $publisherModelo;
-        $controller->apiKeyValidator = $apiKeyValidator;
+        $result = $controller->recibirGeneros();
+        $data = json_decode($result->getBody(), true);
 
-        $request = \Config\Services::request();
-        $response = \Config\Services::response();
-        $controller->setRequest($request);
-        $controller->setResponse($response);
-
-        $response = $controller->recibirPublishers();
-
-        try {
-            $this->assertEquals(200, $response->getStatusCode());
-            $this->assertStringContainsString('Ubisoft', $response->getBody());
-            $this->assertStringContainsString('Electronic Arts', $response->getBody());
-
-            $logger->log('info', 'RESULTADO CORRECTO: Se recibieron los publishers correctamente.');
-        } catch (\PHPUnit\Framework\AssertionFailedError $e) {
-            $logger->log('error', 'ERROR: Falló la recepción de publishers - ' . $e->getMessage());
-            throw $e;
-        }
+        $this->assertEquals(404, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('No se encontraron géneros', $data['error']);
     }
+
+    public function testRecibirGeneros_successful()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos que el método findAll() retorna una lista de géneros.
+        $expectedGeneros = [
+            ['id' => 1, 'nombre' => 'Acción'],
+            ['id' => 2, 'nombre' => 'Aventura']
+        ];
+
+        $mockGeneroModel = $this->getMockBuilder('App\Models\GeneroModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockGeneroModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn($expectedGeneros);
+        $controller->GeneroModelo = $mockGeneroModel;
+
+        $result = $controller->recibirGeneros();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('generos', $data);
+        $this->assertEquals($expectedGeneros, $data['generos']);
+    }
+
+    public function testRecibirGeneros_exception()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos que el método findAll() lanza una excepción.
+        $mockGeneroModel = $this->getMockBuilder('App\Models\GeneroModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockGeneroModel->expects($this->once())
+            ->method('findAll')
+            ->will($this->throwException(new \Exception("DB error")));
+        $controller->GeneroModelo = $mockGeneroModel;
+
+        $result = $controller->recibirGeneros();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error al recuperar los géneros', $data['error']);
+    }
+
+    /**
+     * Test: API Key inválida para recibirPlataformas().
+     */
+    public function testRecibirPlataformas_invalidApiKey()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Simulamos una respuesta de error en la validación.
+        $fakeResponse = Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
+
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // No es necesario configurar PlataformaModelo porque la validación se detiene.
+        $result = $controller->recibirPlataformas();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
+    }
+
+    /**
+     * Test: No se encuentran plataformas (array vacío).
+     */
+    public function testRecibirPlataformas_empty()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Se simula que el método findAll() del modelo retorna un array vacío.
+        $mockPlataformaModel = $this->getMockBuilder('App\Models\PlataformaModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockPlataformaModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
+        $controller->PlataformaModelo = $mockPlataformaModel;
+
+        $result = $controller->recibirPlataformas();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(404, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('No se encontraron plataformas', $data['error']);
+    }
+
+    /**
+     * Test: Plataformas encontradas exitosamente.
+     */
+    public function testRecibirPlataformas_successful()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos que findAll() retorna una lista de plataformas.
+        $expectedPlataformas = [
+            ['id' => 1, 'nombre' => 'Plataforma A'],
+            ['id' => 2, 'nombre' => 'Plataforma B']
+        ];
+
+        $mockPlataformaModel = $this->getMockBuilder('App\Models\PlataformaModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockPlataformaModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn($expectedPlataformas);
+        $controller->PlataformaModelo = $mockPlataformaModel;
+
+        $result = $controller->recibirPlataformas();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('plataformas', $data);
+        $this->assertEquals($expectedPlataformas, $data['plataformas']);
+    }
+
+    /**
+     * Test: Excepción durante la consulta de plataformas.
+     */
+    public function testRecibirPlataformas_exception()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos que findAll() lanza una excepción.
+        $mockPlataformaModel = $this->getMockBuilder('App\Models\PlataformaModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockPlataformaModel->expects($this->once())
+            ->method('findAll')
+            ->will($this->throwException(new Exception("DB error")));
+        $controller->PlataformaModelo = $mockPlataformaModel;
+
+        $result = $controller->recibirPlataformas();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error al recuperar las plataformas', $data['error']);
+    }
+
+    /**
+     * Test: API Key inválida para recibirTiendas().
+     */
+    public function testRecibirTiendas_invalidApiKey()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Simulamos un Response de error (por ejemplo, API Key inválida).
+        $fakeResponse = Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
+        
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // En este caso la validación falla y no se necesita configurar TiendaModelo.
+        $result = $controller->recibirTiendas();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
+    }
+    
+    /**
+     * Test: No se encuentran tiendas (array vacío).
+     */
+    public function testRecibirTiendas_empty()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // Simulamos que el método findAll() retorna un array vacío.
+        $mockTiendaModel = $this->getMockBuilder('App\Models\TiendaModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockTiendaModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
+        $controller->TiendaModelo = $mockTiendaModel;
+        
+        $result = $controller->recibirTiendas();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(404, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('No se encontraron tiendas', $data['error']);
+    }
+    
+    /**
+     * Test: Tiendas encontradas exitosamente.
+     */
+    public function testRecibirTiendas_successful()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // Simulamos que findAll() retorna una lista de tiendas.
+        $expectedTiendas = [
+            ['id' => 1, 'nombre' => 'Tienda A', 'direccion' => 'Calle 123'],
+            ['id' => 2, 'nombre' => 'Tienda B', 'direccion' => 'Avenida 456']
+        ];
+        
+        $mockTiendaModel = $this->getMockBuilder('App\Models\TiendaModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockTiendaModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn($expectedTiendas);
+        $controller->TiendaModelo = $mockTiendaModel;
+        
+        $result = $controller->recibirTiendas();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('tiendas', $data);
+        $this->assertEquals($expectedTiendas, $data['tiendas']);
+    }
+    
+    /**
+     * Test: Excepción durante la consulta de tiendas.
+     */
+    public function testRecibirTiendas_exception()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // Simulamos que findAll() lanza una excepción.
+        $mockTiendaModel = $this->getMockBuilder('App\Models\TiendaModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockTiendaModel->expects($this->once())
+            ->method('findAll')
+            ->will($this->throwException(new Exception("DB error")));
+        $controller->TiendaModelo = $mockTiendaModel;
+        
+        $result = $controller->recibirTiendas();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error al recuperar las tiendas', $data['error']);
+    }
+
+    /**
+     * Test: API Key inválida para recibirDesarrolladoras.
+     */
+    public function testRecibirDesarrolladoras_invalidApiKey()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Simulamos un Response de error (por ejemplo, API Key inválida).
+        $fakeResponse = Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
+        
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // Como la validación falla, el método se detiene en ese punto.
+        $result = $controller->recibirDesarrolladoras();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
+    }
+
+    /**
+     * Test: No se encontraron desarrolladoras (array vacío).
+     */
+    public function testRecibirDesarrolladoras_empty()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // Simulamos que el método findAll() retorna un array vacío.
+        $mockDesarrolladoraModel = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockDesarrolladoraModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
+        $controller->DesarrolladoraModelo = $mockDesarrolladoraModel;
+        
+        $result = $controller->recibirDesarrolladoras();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(404, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('No se encontraron desarrolladoras', $data['error']);
+    }
+
+    /**
+     * Test: Desarrolladoras encontradas exitosamente.
+     */
+    public function testRecibirDesarrolladoras_successful()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // Simulamos que findAll() retorna una lista de desarrolladoras.
+        $expectedDesarrolladoras = [
+            ['id' => 1, 'nombre' => 'Desarrolladora A'],
+            ['id' => 2, 'nombre' => 'Desarrolladora B']
+        ];
+        
+        $mockDesarrolladoraModel = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockDesarrolladoraModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn($expectedDesarrolladoras);
+        $controller->DesarrolladoraModelo = $mockDesarrolladoraModel;
+        
+        $result = $controller->recibirDesarrolladoras();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('desarrolladoras', $data);
+        $this->assertEquals($expectedDesarrolladoras, $data['desarrolladoras']);
+    }
+
+    /**
+     * Test: Excepción durante la consulta de desarrolladoras.
+     */
+    public function testRecibirDesarrolladoras_exception()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+        
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+        
+        // Simulamos que findAll() lanza una excepción.
+        $mockDesarrolladoraModel = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockDesarrolladoraModel->expects($this->once())
+            ->method('findAll')
+            ->will($this->throwException(new Exception("DB error")));
+        $controller->DesarrolladoraModelo = $mockDesarrolladoraModel;
+        
+        $result = $controller->recibirDesarrolladoras();
+        $data = json_decode($result->getBody(), true);
+        
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error al recuperar las desarrolladoras', $data['error']);
+    }
+
+    /**
+     * Test: API Key inválida para recibirPublishers().
+     */
+    public function testRecibirPublishers_invalidApiKey()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Simulamos un Response de error (por ejemplo, API Key inválida).
+        $fakeResponse = Services::response()
+            ->setJSON(['error' => 'API Key inválida'])
+            ->setStatusCode(401);
+
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->with($this->anything(), $this->anything())
+            ->willReturn($fakeResponse);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Al no pasar la validación, el modelo no se invoca.
+        $result = $controller->recibirPublishers();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(401, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('API Key inválida', $data['error']);
+    }
+
+    /**
+     * Test: No se encuentran publishers (array vacío).
+     */
+    public function testRecibirPublishers_empty()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos que el método findAll() del modelo retorna un array vacío.
+        $mockPublisherModel = $this->getMockBuilder('App\Models\PublisherModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockPublisherModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
+        $controller->PublisherModelo = $mockPublisherModel;
+
+        $result = $controller->recibirPublishers();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(404, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('No se encontraron publishers', $data['error']);
+    }
+
+    /**
+     * Test: Publishers encontrados exitosamente.
+     */
+    public function testRecibirPublishers_successful()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos que findAll() retorna una lista de publishers.
+        $expectedPublishers = [
+            ['id' => 1, 'nombre' => 'Publisher A'],
+            ['id' => 2, 'nombre' => 'Publisher B']
+        ];
+
+        $mockPublisherModel = $this->getMockBuilder('App\Models\PublisherModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockPublisherModel->expects($this->once())
+            ->method('findAll')
+            ->willReturn($expectedPublishers);
+        $controller->PublisherModelo = $mockPublisherModel;
+
+        $result = $controller->recibirPublishers();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(200, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('publishers', $data);
+        $this->assertEquals($expectedPublishers, $data['publishers']);
+    }
+
+    /**
+     * Test: Excepción durante la consulta de publishers.
+     */
+    public function testRecibirPublishers_exception()
+    {
+        $controller = new DataController();
+        $this->initController($controller);
+
+        // Validación exitosa.
+        $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['validar'])
+            ->getMock();
+        $mockValidator->expects($this->once())
+            ->method('validar')
+            ->willReturn(true);
+        $controller->apiKeyValidator = $mockValidator;
+
+        // Simulamos que findAll() lanza una excepción.
+        $mockPublisherModel = $this->getMockBuilder('App\Models\PublisherModelo')
+            ->disableOriginalConstructor()
+            ->onlyMethods(['findAll'])
+            ->getMock();
+        $mockPublisherModel->expects($this->once())
+            ->method('findAll')
+            ->will($this->throwException(new Exception("DB error")));
+        $controller->PublisherModelo = $mockPublisherModel;
+
+        $result = $controller->recibirPublishers();
+        $data = json_decode($result->getBody(), true);
+
+        $this->assertEquals(500, $result->getStatusCode());
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('error', $data);
+        $this->assertEquals('Ocurrió un error al recuperar los publishers', $data['error']);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function testEliminarJuego()
     {
@@ -475,6 +1578,22 @@ class ControllersTest extends BaseTestCase
             $this->assertArrayHasKey('juegos', $json);
         } else {
             $this->assertArrayHasKey('error', $json);
+        }
+    }
+
+    public function testObtenerIdsJuegos_API()
+    {
+        $logger = $this->get_logger("ObtenerIdsJuegos_API_");
+
+        $controller = new \App\Controllers\ApiController();
+        $ids = $controller->obtenerIdsJuegos_API();
+
+        if (is_array($ids) && !empty($ids) && is_int($ids[0])) {
+            $logger->log('info', "RESULTADO CORRECTO: Se obtuvo una lista de IDs de juegos correctamente.");
+            $this->assertTrue(true, "La función devolverá un array no vacío de IDs enteros.");
+        } else {
+            $logger->log('error', "ERROR: No se obtuvo la lista de IDs correctamente.");
+            $this->fail('La función no devolvió la lista de IDs correctamente.');
         }
     }
 

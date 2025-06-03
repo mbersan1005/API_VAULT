@@ -1,16 +1,40 @@
 Controllers (App\Controllers\Controllers)
- [x] ObtenerIdsJuegos API
- [x] Recibir juegos
- [x] RecibirDatosJuego Exito
- [x] RecibirDatosJuego NoEncontrado
- [x] RecibirDatosJuego Excepcion
- [x] Recibir generos
- [x] Recibir plataformas
- [x] Recibir tiendas
- [x] Recibir desarrolladoras
- [x] Recibir publishers
+ [x] RecibirJuegos invalidApiKey
+ [x] RecibirJuegos noJuegos
+ [x] RecibirJuegos withJuegos
+ [x] RecibirJuegos exceptionInFindAll
+ [x] RecibirDatosJuego invalidApiKey
+ [x] RecibirDatosJuego found
+ [x] RecibirDatosJuego notFound
+ [x] RecibirDatosJuego exception
+ [x] InicioSesion invalidApiKey
+ [x] InicioSesion usuarioNoEncontrado
+ [x] InicioSesion incorrectPassword
+ [x] InicioSesion successful
+ [x] InicioSesion exception
+ [x] RecibirGeneros invalidApiKey
+ [x] RecibirGeneros empty
+ [x] RecibirGeneros successful
+ [x] RecibirGeneros exception
+ [x] RecibirPlataformas invalidApiKey
+ [x] RecibirPlataformas empty
+ [x] RecibirPlataformas successful
+ [x] RecibirPlataformas exception
+ [x] RecibirTiendas invalidApiKey
+ [x] RecibirTiendas empty
+ [x] RecibirTiendas successful
+ [x] RecibirTiendas exception
+ [x] RecibirDesarrolladoras invalidApiKey
+ [x] RecibirDesarrolladoras empty
+ [x] RecibirDesarrolladoras successful
+ [x] RecibirDesarrolladoras exception
+ [x] RecibirPublishers invalidApiKey
+ [x] RecibirPublishers empty
+ [x] RecibirPublishers successful
+ [x] RecibirPublishers exception
  [x] Eliminar juego
  [x] Obtener datos formulario
  [x] Recibir juegos admin devuelve lista
+ [x] ObtenerIdsJuegos API
  [x] 
 
