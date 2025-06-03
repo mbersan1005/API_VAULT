@@ -1418,7 +1418,7 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals('Ocurrió un error al recuperar los publishers', $data['error']);
     }
 
-
+    
 
 
 
