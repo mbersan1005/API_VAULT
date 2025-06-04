@@ -1,0 +1,116 @@
+ERROR - 2025-06-04 10:46:09 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 10:46:12 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 10:46:17 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 10:46:20 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 10:46:23 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 10:46:26 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 10:46:29 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 10:46:32 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 10:46:36 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 10:46:38 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 10:54:10 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 10:54:13 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 10:54:18 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 10:54:21 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 10:54:24 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 10:54:27 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 10:54:31 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 10:54:34 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 10:54:38 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 10:54:40 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 10:54:46 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 10:57:37 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 10:57:40 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 10:57:44 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 10:57:47 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 10:57:50 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 10:57:52 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 10:57:55 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 10:57:58 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 10:58:01 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 10:58:03 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 10:58:06 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 11:02:26 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 11:02:29 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 11:02:34 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 11:02:37 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 11:02:41 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 11:02:44 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 11:02:47 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 11:02:51 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 11:02:55 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 11:02:57 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 11:03:00 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 11:03:05 --> Error al realizar la búsqueda: Expectation failed for method name is "like" when invoked 1 time(s)
+Parameter 1 for invocation App\Models\VideojuegoModelo::like('LOWER(nombre)', '') does not match expected value.
+Failed asserting that two strings are equal.
+ERROR - 2025-06-04 11:14:16 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 11:14:19 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 11:14:23 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 11:14:26 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 11:14:29 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 11:14:32 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 11:14:35 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 11:14:38 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 11:14:42 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 11:14:45 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 11:14:48 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 11:14:52 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-04 11:18:31 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 11:18:34 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 11:18:38 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 11:18:41 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 11:18:44 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 11:18:47 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 11:18:50 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 11:18:53 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 11:18:57 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 11:18:59 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 11:19:02 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 11:19:05 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-04 11:19:08 --> Error al buscar desarrolladoras: Expectation failed for method name is "like" when invoked 1 time(s)
+Parameter 1 for invocation App\Models\DesarrolladoraModelo::like('LOWER(nombre)', '') does not match expected value.
+Failed asserting that two strings are equal.
+ERROR - 2025-06-04 11:24:23 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 11:24:26 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 11:24:31 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 11:24:34 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 11:24:37 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 11:24:40 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 11:24:43 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 11:24:47 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 11:24:50 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 11:24:53 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 11:24:56 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 11:24:59 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-04 11:25:02 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-04 11:32:46 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 11:32:49 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 11:32:53 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 11:32:56 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 11:33:00 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 11:33:03 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 11:33:06 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 11:33:10 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 11:33:15 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 11:33:17 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 11:33:20 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 11:33:23 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-04 11:33:26 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-04 11:33:29 --> Error al buscar publishers: Expectation failed for method name is "like" when invoked 1 time(s)
+Parameter 1 for invocation App\Models\PublisherModelo::like('LOWER(nombre)', '') does not match expected value.
+Failed asserting that two strings are equal.
+ERROR - 2025-06-04 11:40:13 --> Error al obtener juegos: Database error
+ERROR - 2025-06-04 11:40:16 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-04 11:40:21 --> Error en inicioSesion: DB error
+ERROR - 2025-06-04 11:40:24 --> Error al obtener géneros: DB error
+ERROR - 2025-06-04 11:40:27 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-04 11:40:30 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-04 11:40:33 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-04 11:40:36 --> Error al obtener publishers: DB error
+ERROR - 2025-06-04 11:40:40 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-04 11:40:42 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-04 11:40:45 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-04 11:40:48 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-04 11:40:52 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-04 11:40:55 --> Error al buscar publishers: DB error

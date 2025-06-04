@@ -40,7 +40,22 @@ Controllers (App\Controllers\Controllers)
  [x] ObtenerDatosFormulario invalidApiKey
  [x] ObtenerDatosFormulario successful
  [x] ObtenerDatosFormulario exception
- [x] Recibir juegos admin devuelve lista
+ [x] RecibirJuegosAdmin invalidApiKey
+ [x] RecibirJuegosAdmin empty
+ [x] RecibirJuegosAdmin success
+ [x] RecibirJuegosAdmin exception
+ [x] RealizarBusqueda invalidApiKey
+ [x] RealizarBusqueda empty
+ [x] RealizarBusqueda success
+ [x] RealizarBusqueda exception
+ [x] RealizarBusquedaDesarrolladoras invalidApiKey
+ [x] RealizarBusquedaDesarrolladoras empty
+ [x] RealizarBusquedaDesarrolladoras success
+ [x] RealizarBusquedaDesarrolladoras exception
+ [x] RealizarBusquedaPublishers invalidApiKey
+ [x] RealizarBusquedaPublishers empty
+ [x] RealizarBusquedaPublishers success
+ [x] RealizarBusquedaPublishers exception
  [x] ObtenerIdsJuegos API
  [x] 
 
