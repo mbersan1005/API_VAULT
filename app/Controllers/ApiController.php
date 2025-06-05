@@ -20,11 +20,8 @@ class ApiController extends BaseController
 {
     protected $request;
     protected $response;
-
     public $apiKeyValidator;
-
-    //https://apirest.saicasl.eu/api1/api/public -- https://api-vault.onrender.com
-    private $baseUrlHost;
+    protected $apiKey;
 
     /*CONSTRUCTOR*/
     public function __construct()
@@ -38,7 +35,7 @@ class ApiController extends BaseController
         $this->PlataformaModelo = new PlataformaModelo();
         $this->PublisherModelo = new PublisherModelo();
         $this->TiendaModelo = new TiendaModelo();
-        $this->baseUrlHost = "https://api-vault.onrender.com";
+        $this->apiKey = getenv('RAWG_API_KEY');
     }
 
     public function setRequest(RequestInterface $request)
@@ -57,14 +54,13 @@ class ApiController extends BaseController
      */
     public function obtenerIdsJuegos_API()
     {
-        $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/games";
         $pageSize = 20; //20
         $totalPages = 1; //25
         $ids = [];
 
         for ($page = 1; $page <= $totalPages; $page++) {
-            $url = "$baseUrl?key=$apiKey&page=$page&page_size=$pageSize";
+            $url = "$baseUrl?key={$this->apiKey}&page=$page&page_size=$pageSize";
 
             $llamada_API = curl_init();
             curl_setopt($llamada_API, CURLOPT_URL, $url);
@@ -94,15 +90,13 @@ class ApiController extends BaseController
      */
     public function rellenarTablaVideojuegos($idsJuegos)
     {
-        $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/games";
-
 
         $db = \Config\Database::connect();
         $db->transBegin();
 
         foreach ($idsJuegos as $key => $value) {
-            $url = "$baseUrl/$value?key=$apiKey";
+            $url = "$baseUrl/$value?key={$this->apiKey}";
             $juegoData = [];
 
             $llamada_API = curl_init();
@@ -273,13 +267,12 @@ class ApiController extends BaseController
      */
     public function rellenarTablaGeneros()
     {
-        $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/genres";
 
         $db = \Config\Database::connect();
         $db->transStart();
 
-        $url = "$baseUrl?key=$apiKey";
+        $url = "$baseUrl?key={$this->apiKey}";
         $llamada_API = curl_init();
         curl_setopt($llamada_API, CURLOPT_URL, $url);
         curl_setopt($llamada_API, CURLOPT_RETURNTRANSFER, true);
@@ -316,7 +309,6 @@ class ApiController extends BaseController
      */
     public function rellenarTablaDesarrolladoras()
     {
-        $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/developers";
         $totalPages = 1; //25
         $pageSize = 40; //40
@@ -326,7 +318,7 @@ class ApiController extends BaseController
 
         for ($page = 1; $page <= $totalPages; $page++) {
 
-            $url = "$baseUrl?key=$apiKey&page=$page&page_size=$pageSize";
+            $url = "$baseUrl?key={$this->apiKey}&page=$page&page_size=$pageSize";
             $llamada_API = curl_init();
             curl_setopt($llamada_API, CURLOPT_URL, $url);
             curl_setopt($llamada_API, CURLOPT_RETURNTRANSFER, true);
@@ -364,7 +356,6 @@ class ApiController extends BaseController
      */
     public function rellenarTablaPlataformas()
     {
-        $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/platforms";
         $totalPages = 2;
 
@@ -372,7 +363,7 @@ class ApiController extends BaseController
         $db->transStart();
 
         for ($page = 1; $page <= $totalPages; $page++) {
-            $url = "$baseUrl?key=$apiKey&page=$page";
+            $url = "$baseUrl?key={$this->apiKey}&page=$page";
             $llamada_API = curl_init();
             curl_setopt($llamada_API, CURLOPT_URL, $url);
             curl_setopt($llamada_API, CURLOPT_RETURNTRANSFER, true);
@@ -410,7 +401,6 @@ class ApiController extends BaseController
      */
     public function rellenarTablaPublishers()
     {
-        $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/publishers";
         $totalPages = 1; //25
         $pageSize = 40;
@@ -420,7 +410,7 @@ class ApiController extends BaseController
 
         for ($page = 1; $page <= $totalPages; $page++) {
 
-            $url = "$baseUrl?key=$apiKey&page=$page&page_size=$pageSize";
+            $url = "$baseUrl?key={$this->apiKey}&page=$page&page_size=$pageSize";
 
             $llamada_API = curl_init();
             curl_setopt($llamada_API, CURLOPT_URL, $url);
@@ -459,13 +449,12 @@ class ApiController extends BaseController
      */
     public function rellenarTablaTiendas()
     {
-        $apiKey = "a9a117515a694c0fa91d404dd5ede441";
         $baseUrl = "https://api.rawg.io/api/stores";
 
         $db = \Config\Database::connect();
         $db->transStart();
 
-        $url = "$baseUrl?key=$apiKey";
+        $url = "$baseUrl?key={$this->apiKey}";
         $llamada_API = curl_init();
         curl_setopt($llamada_API, CURLOPT_URL, $url);
         curl_setopt($llamada_API, CURLOPT_RETURNTRANSFER, true);
@@ -546,9 +535,9 @@ class ApiController extends BaseController
 
             $cloudinary = new Cloudinary([
                 'cloud' => [
-                    'cloud_name' => 'mbersan1005',
-                    'api_key'    => '246324721933957',
-                    'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                    'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => getenv('CLOUDINARY_API_KEY'),
+                    'api_secret' => getenv('CLOUDINARY_API_SECRET'),
                 ]
             ]);
 

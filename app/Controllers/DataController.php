@@ -21,11 +21,7 @@ class DataController extends BaseController
 
     protected $request;
     protected $response;
-
     public $apiKeyValidator;
-
-    //https://apirest.saicasl.eu/api1/api/public -- https://vault-ci4-api.up.railway.app -- https://api-vault.onrender.com
-    private $baseUrlHost;
 
     /*CONSTRUCTOR*/
     public function __construct()
@@ -38,7 +34,6 @@ class DataController extends BaseController
         $this->PlataformaModelo = new PlataformaModelo();
         $this->PublisherModelo = new PublisherModelo();
         $this->TiendaModelo = new TiendaModelo();
-        $this->baseUrlHost = "https://api-vault.onrender.com";
     }
 
     public function setRequest(RequestInterface $request)
@@ -406,9 +401,9 @@ class DataController extends BaseController
             if (strpos($juego['imagen'], 'res.cloudinary.com') !== false) {
                 $cloudinary = new Cloudinary([
                     'cloud' => [
-                        'cloud_name' => 'mbersan1005',
-                        'api_key'    => '246324721933957',
-                        'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                        'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
+                        'api_key'    => getenv('CLOUDINARY_API_KEY'),
+                        'api_secret' => getenv('CLOUDINARY_API_SECRET'),
                     ],
                 ]);
 
@@ -492,9 +487,9 @@ class DataController extends BaseController
 
             $cloudinary = new Cloudinary([
                 'cloud' => [
-                    'cloud_name' => 'mbersan1005',
-                    'api_key'    => '246324721933957',
-                    'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                    'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => getenv('CLOUDINARY_API_KEY'),
+                    'api_secret' => getenv('CLOUDINARY_API_SECRET'),
                 ],
                 'url' => [
                     'secure' => true
@@ -636,9 +631,9 @@ class DataController extends BaseController
 
             $cloudinary = new Cloudinary([
                 'cloud' => [
-                    'cloud_name' => 'mbersan1005',
-                    'api_key'    => '246324721933957',
-                    'api_secret' => 'Ojh3Chu7gOvYJbwzWB-u0jmXF7U',
+                    'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => getenv('CLOUDINARY_API_KEY'),
+                    'api_secret' => getenv('CLOUDINARY_API_SECRET'),
                 ],
             ]);
 
