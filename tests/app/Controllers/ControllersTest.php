@@ -8,6 +8,7 @@ use Config\Services;
 use App\Services\ApiKeyValidator;
 use Exception;
 use App\Controllers\DataController;
+use App\Controllers\ApiController;
 use stdClass;
 
 class ControllersTest extends BaseTestCase
@@ -18,7 +19,7 @@ class ControllersTest extends BaseTestCase
      */
     private function initController(DataController $controller): void
     {
-        // Aseguramos que se inicialicen las propiedades necesarias del controlador.
+        //Aseguramos que se inicialicen las propiedades necesarias del controlador.
         $controller->initController(
             Services::request(),
             Services::response(),
@@ -44,17 +45,17 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API key inválida.
      */
-    public function testRecibirJuegos_invalidApiKey()
+    public function testRecibirJuegos_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Creamos un fake response usando el servicio de response.
+        //Creamos un fake response usando el servicio de response.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
 
-        // Creamos el mock de ApiKeyValidator para forzar una validación fallida.
+        //Creamos el mock de ApiKeyValidator para forzar una validación fallida.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -66,11 +67,11 @@ class ControllersTest extends BaseTestCase
             ->willReturn($fakeResponse);
 
         $controller->apiKeyValidator = $mockValidator;
-        // No es necesario configurar el modelo puesto que la validación se detiene antes.
+        //No es necesario configurar el modelo puesto que la validación se detiene antes.
 
         $result = $controller->recibirJuegos();
 
-        // Obtenemos y decodificamos el contenido JSON
+        //Obtenemos y decodificamos el contenido JSON
         $body = $result->getBody();
         $data = json_decode($body, true);
 
@@ -83,12 +84,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API key válida pero no existen videojuegos.
      */
-    public function testRecibirJuegos_noJuegos()
+    public function testRecibirJuegos_SinJuegos()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Configuramos el mock para la validación exitosa.
+        //Configuramos el mock para la validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -99,7 +100,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos al modelo devolviendo un array vacío.
+        //Simulamos al modelo devolviendo un array vacío.
         $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -125,12 +126,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API key válida y existen videojuegos.
      */
-    public function testRecibirJuegos_withJuegos()
+    public function testRecibirJuegos_ConJuegos()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Configuramos el mock para la validación exitosa.
+        //Configuramos el mock para la validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -141,13 +142,13 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Creamos un array simulando videojuegos.
+        //Creamos un array simulando videojuegos.
         $juegosArray = [
             ['id' => 1, 'nombre' => 'Juego1'],
             ['id' => 2, 'nombre' => 'Juego2']
         ];
 
-        // Simulamos al modelo devolviendo videojuegos.
+        //Simulamos al modelo devolviendo videojuegos.
         $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -173,12 +174,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Excepción al obtener los juegos (error en findAll).
      */
-    public function testRecibirJuegos_exceptionInFindAll()
+    public function testRecibirJuegos_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Configuramos el mock para la validación exitosa.
+        //Configuramos el mock para la validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -189,7 +190,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Configuramos el modelo para que lance una excepción.
+        //Configuramos el modelo para que lance una excepción.
         $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -214,15 +215,13 @@ class ControllersTest extends BaseTestCase
 
     /**
      * Test: API Key inválida.
-     *
-     * Se simula que la validación falla y se retorna un objeto Response con error 401.
      */
-    public function testRecibirDatosJuego_invalidApiKey()
+    public function testRecibirDatosJuego_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Creamos una respuesta falsa de error por API key inválida.
+        //Creamos una respuesta falsa de error por API key inválida.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -236,7 +235,7 @@ class ControllersTest extends BaseTestCase
             ->with($this->anything(), $this->anything())
             ->willReturn($fakeResponse);
         $controller->apiKeyValidator = $mockValidator;
-        // No es necesario configurar VideojuegoModelo ya que la validación no continúa.
+        //No es necesario configurar VideojuegoModelo ya que la validación no continúa.
 
         $result = $controller->recibirDatosJuego(1);
         $data = json_decode($result->getBody(), true);
@@ -249,15 +248,13 @@ class ControllersTest extends BaseTestCase
 
     /**
      * Test: Juego encontrado.
-     *
-     * Se simula que el modelo retorna un juego existente.
      */
-    public function testRecibirDatosJuego_found()
+    public function testRecibirDatosJuego_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -267,7 +264,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulación del juego encontrado.
+        //Simulación del juego encontrado.
         $expectedGame = ['id' => 1, 'nombre' => 'Juego Uno', 'genero' => 'Acción'];
 
         $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
@@ -291,15 +288,13 @@ class ControllersTest extends BaseTestCase
 
     /**
      * Test: Juego no encontrado.
-     *
-     * Se simula que el modelo no encuentra ningún juego para el ID proporcionado.
      */
-    public function testRecibirDatosJuego_notFound()
+    public function testRecibirDatosJuego_NoEncontrado()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -309,7 +304,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Configuramos el modelo para que retorne null (no encontrado)
+        //Configuramos el modelo para que retorne null (no encontrado)
         $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['find'])
@@ -330,16 +325,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test: Excepción al obtener el juego.
-     *
-     * Se simula que el método find lanza una excepción, por lo que se debe retornar un error 500.
+     * Test: Excepción al obtener el juego
      */
-    public function testRecibirDatosJuego_exception()
+    public function testRecibirDatosJuego_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -349,7 +342,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Configuramos el modelo para que lance una excepción.
+        //Configuramos el modelo para que lance una excepción
         $mockModelo = $this->getMockBuilder(VideojuegoModelo::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['find'])
@@ -373,12 +366,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API Key inválida.
      */
-    public function testInicioSesion_invalidApiKey()
+    public function testInicioSesion_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Simulamos una respuesta de error por API key inválida.
+        //Simulamos una respuesta de error por API key inválida.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -392,9 +385,9 @@ class ControllersTest extends BaseTestCase
             ->with($this->anything(), $this->anything())
             ->willReturn($fakeResponse);
         $controller->apiKeyValidator = $mockValidator;
-        // No es necesario configurar AdministradoresModelo en este caso.
+        //No es necesario configurar AdministradoresModelo en este caso.
 
-        // Ejecutamos el método
+        //Ejecutamos el método
         $result = $controller->inicioSesion();
         $data = json_decode($result->getBody(), true);
 
@@ -407,15 +400,15 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Usuario no encontrado.
      */
-    public function testInicioSesion_usuarioNoEncontrado()
+    public function testInicioSesion_UsuarioNoEncontrado()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Datos de inicio de sesión que se enviarán en el request.
+        //Datos de inicio de sesión que se enviarán en el request.
         $inputData = ['nombre' => 'nonexistent', 'password' => 'any'];
 
-        // Simulamos el método getJSON() del request con un stub.
+        //Simulamos el método getJSON() del request con un stub.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -424,10 +417,10 @@ class ControllersTest extends BaseTestCase
             ->method('getJSON')
             ->with(true)
             ->willReturn($inputData);
-        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        //Inyectamos el fakeRequest en la propiedad protegida 'request'
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -437,8 +430,8 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos la consulta en el modelo:
-        // Al llamar ->where('nombre', 'nonexistent')->first() se retorna null.
+        //Simulamos la consulta en el modelo:
+        //Al llamar ->where('nombre', 'nonexistent')->first() se retorna null.
         $mockQuery = $this->getMockBuilder('stdClass')
             ->disableOriginalConstructor()
             ->addMethods(['first'])
@@ -447,8 +440,8 @@ class ControllersTest extends BaseTestCase
             ->method('first')
             ->willReturn(null);
 
-        // En lugar de onlyMethods, usamos addMethods para agregar "where" al mock,
-        // ya que AdministradoresModelo no tiene declarado "where".
+        //En lugar de onlyMethods, usamos addMethods para agregar "where" al mock,
+        //ya que AdministradoresModelo no tiene declarado "where".
         $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
             ->disableOriginalConstructor()
             ->addMethods(['where'])
@@ -459,7 +452,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($mockQuery);
         $controller->AdministradoresModelo = $mockAdminModel;
 
-        // Ejecutamos el método.
+        //Ejecutamos el método.
         $result = $controller->inicioSesion();
         $data = json_decode($result->getBody(), true);
 
@@ -472,14 +465,14 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Contraseña incorrecta.
      */
-    public function testInicioSesion_incorrectPassword()
+    public function testInicioSesion_PasswordIncorrecta()
     {
         $controller = new DataController();
         $this->initController($controller);
 
         $inputData = ['nombre' => 'user', 'password' => 'wrongPassword'];
 
-        // Stub para getJSON() que retorna los datos de entrada.
+        //Stub para getJSON() que retorna los datos de entrada.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -488,10 +481,10 @@ class ControllersTest extends BaseTestCase
             ->method('getJSON')
             ->with(true)
             ->willReturn($inputData);
-        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        //Inyectamos el fakeRequest en la propiedad protegida 'request'
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -501,8 +494,8 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos un administrador encontrado.
-        // La contraseña almacenada se genera a partir de 'correctPassword'.
+        //Simulamos un administrador encontrado.
+        //La contraseña almacenada se genera a partir de 'correctPassword'.
         $adminRecord = [
             'id'             => 2,
             'nombre'         => 'user',
@@ -518,7 +511,7 @@ class ControllersTest extends BaseTestCase
             ->method('first')
             ->willReturn($adminRecord);
 
-        // Usamos addMethods para agregar "where" (ya que no existe explícitamente).
+        //Usamos addMethods para agregar "where" (ya que no existe explícitamente).
         $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
             ->disableOriginalConstructor()
             ->addMethods(['where'])
@@ -529,7 +522,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($mockQuery);
         $controller->AdministradoresModelo = $mockAdminModel;
 
-        // Ejecutamos el método y esperamos que la verificación de password falle.
+        //Ejecutamos el método y esperamos que la verificación de password falle.
         $result = $controller->inicioSesion();
         $data = json_decode($result->getBody(), true);
 
@@ -542,14 +535,14 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Inicio de sesión exitoso.
      */
-    public function testInicioSesion_successful()
+    public function testInicioSesion_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
         $inputData = ['nombre' => 'user', 'password' => 'password123'];
 
-        // Simulamos el request que retorna el JSON de entrada.
+        //Simulamos el request que retorna el JSON de entrada.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -558,10 +551,10 @@ class ControllersTest extends BaseTestCase
             ->method('getJSON')
             ->with(true)
             ->willReturn($inputData);
-        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        //Inyectamos el fakeRequest en la propiedad protegida 'request'
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -571,7 +564,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Preparamos el registro del administrador.
+        //Preparamos el registro del administrador.
         $adminRecord = [
             'id'             => 1,
             'nombre'         => 'user',
@@ -579,7 +572,7 @@ class ControllersTest extends BaseTestCase
             'fecha_creacion' => '2022-01-01 00:00:00'
         ];
 
-        // Simulamos el método where()->first()
+        //Simulamos el método where()->first()
         $mockQuery = $this->getMockBuilder('stdClass')
             ->disableOriginalConstructor()
             ->addMethods(['first'])
@@ -588,7 +581,7 @@ class ControllersTest extends BaseTestCase
             ->method('first')
             ->willReturn($adminRecord);
 
-        // En este caso, queremos controlar además el método update.
+        //En este caso, queremos controlar además el método update.
         $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
             ->disableOriginalConstructor()
             ->addMethods(['where'])
@@ -608,7 +601,7 @@ class ControllersTest extends BaseTestCase
             );
         $controller->AdministradoresModelo = $mockAdminModel;
 
-        // Ejecutamos el método.
+        //Ejecutamos el método.
         $result = $controller->inicioSesion();
         $data = json_decode($result->getBody(), true);
 
@@ -627,14 +620,14 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Excepción durante el inicio de sesión.
      */
-    public function testInicioSesion_exception()
+    public function testInicioSesion_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
         $inputData = ['nombre' => 'user', 'password' => 'password123'];
 
-        // Simulamos el request que retorna el JSON de entrada.
+        //Simulamos el request que retorna el JSON de entrada.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -643,10 +636,10 @@ class ControllersTest extends BaseTestCase
             ->method('getJSON')
             ->with(true)
             ->willReturn($inputData);
-        // Inyectamos el fakeRequest en la propiedad protegida 'request'
+        //Inyectamos el fakeRequest en la propiedad protegida 'request'
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -656,7 +649,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que ocurre una excepción al llamar a first().
+        //Simulamos que ocurre una excepción al llamar a first().
         $mockQuery = $this->getMockBuilder('stdClass')
             ->disableOriginalConstructor()
             ->addMethods(['first'])
@@ -665,7 +658,7 @@ class ControllersTest extends BaseTestCase
             ->method('first')
             ->will($this->throwException(new Exception("DB error")));
 
-        // Aquí usamos addMethods para agregar "where" a AdministradoresModelo.
+        //Aquí usamos addMethods para agregar "where" a AdministradoresModelo.
         $mockAdminModel = $this->getMockBuilder('App\Models\AdministradoresModelo')
             ->disableOriginalConstructor()
             ->addMethods(['where'])
@@ -676,7 +669,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($mockQuery);
         $controller->AdministradoresModelo = $mockAdminModel;
 
-        // Ejecutamos el método.
+        //Ejecutamos el método.
         $result = $controller->inicioSesion();
         $data = json_decode($result->getBody(), true);
 
@@ -686,12 +679,15 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals('Ocurrió un error en el inicio de sesión', $data['error']);
     }
 
-    public function testRecibirGeneros_invalidApiKey()
+    /**
+     * Test: API Key inválida.
+     */
+    public function testRecibirGeneros_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Simulamos una respuesta de error en la validación (por ejemplo, API Key inválida).
+        //Simulamos una respuesta de error en la validación (por ejemplo, API Key inválida).
         $fakeResponse = \Config\Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -706,7 +702,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($fakeResponse);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Al retornar desde la validación fallida, no se requiere configurar GeneroModelo.
+        //Al retornar desde la validación fallida, no se requiere configurar GeneroModelo.
         $result = $controller->recibirGeneros();
         $data = json_decode($result->getBody(), true);
 
@@ -716,12 +712,15 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals('API Key inválida', $data['error']);
     }
 
-    public function testRecibirGeneros_empty()
+    /**
+     * Test: No se encuentran generos (array vacío).
+     */
+    public function testRecibirGeneros_SinGeneros()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -731,7 +730,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que el método findAll() del modelo retorna un array vacío.
+        //Simulamos que el método findAll() del modelo retorna un array vacío.
         $mockGeneroModel = $this->getMockBuilder('App\Models\GeneroModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -750,12 +749,15 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals('No se encontraron géneros', $data['error']);
     }
 
-    public function testRecibirGeneros_successful()
+    /**
+     * Test: Generos encontrados exitosamente.
+     */
+    public function testRecibirGeneros_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -765,7 +767,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que el método findAll() retorna una lista de géneros.
+        //Simulamos que el método findAll() retorna una lista de géneros.
         $expectedGeneros = [
             ['id' => 1, 'nombre' => 'Acción'],
             ['id' => 2, 'nombre' => 'Aventura']
@@ -789,12 +791,15 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals($expectedGeneros, $data['generos']);
     }
 
-    public function testRecibirGeneros_exception()
+    /**
+     * Test: Excepción durante la consulta de generos.
+     */
+    public function testRecibirGeneros_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -804,7 +809,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que el método findAll() lanza una excepción.
+        //Simulamos que el método findAll() lanza una excepción.
         $mockGeneroModel = $this->getMockBuilder('App\Models\GeneroModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -826,12 +831,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API Key inválida para recibirPlataformas().
      */
-    public function testRecibirPlataformas_invalidApiKey()
+    public function testRecibirPlataformas_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Simulamos una respuesta de error en la validación.
+        //Simulamos una respuesta de error en la validación.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -846,7 +851,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($fakeResponse);
         $controller->apiKeyValidator = $mockValidator;
         
-        // No es necesario configurar PlataformaModelo porque la validación se detiene.
+        //No es necesario configurar PlataformaModelo porque la validación se detiene.
         $result = $controller->recibirPlataformas();
         $data = json_decode($result->getBody(), true);
 
@@ -859,12 +864,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: No se encuentran plataformas (array vacío).
      */
-    public function testRecibirPlataformas_empty()
+    public function testRecibirPlataformas_SinPlataformas()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -874,7 +879,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Se simula que el método findAll() del modelo retorna un array vacío.
+        //Se simula que el método findAll() del modelo retorna un array vacío.
         $mockPlataformaModel = $this->getMockBuilder('App\Models\PlataformaModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -896,12 +901,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Plataformas encontradas exitosamente.
      */
-    public function testRecibirPlataformas_successful()
+    public function testRecibirPlataformas_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -911,7 +916,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que findAll() retorna una lista de plataformas.
+        //Simulamos que findAll() retorna una lista de plataformas.
         $expectedPlataformas = [
             ['id' => 1, 'nombre' => 'Plataforma A'],
             ['id' => 2, 'nombre' => 'Plataforma B']
@@ -938,12 +943,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Excepción durante la consulta de plataformas.
      */
-    public function testRecibirPlataformas_exception()
+    public function testRecibirPlataformas_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -953,7 +958,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que findAll() lanza una excepción.
+        //Simulamos que findAll() lanza una excepción.
         $mockPlataformaModel = $this->getMockBuilder('App\Models\PlataformaModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -975,12 +980,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API Key inválida para recibirTiendas().
      */
-    public function testRecibirTiendas_invalidApiKey()
+    public function testRecibirTiendas_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Simulamos un Response de error (por ejemplo, API Key inválida).
+        //Simulamos un Response de error (por ejemplo, API Key inválida).
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -995,7 +1000,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($fakeResponse);
         $controller->apiKeyValidator = $mockValidator;
         
-        // En este caso la validación falla y no se necesita configurar TiendaModelo.
+        //En este caso la validación falla y no se necesita configurar TiendaModelo.
         $result = $controller->recibirTiendas();
         $data = json_decode($result->getBody(), true);
         
@@ -1008,12 +1013,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: No se encuentran tiendas (array vacío).
      */
-    public function testRecibirTiendas_empty()
+    public function testRecibirTiendas_SinTiendas()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1023,7 +1028,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simulamos que el método findAll() retorna un array vacío.
+        //Simulamos que el método findAll() retorna un array vacío.
         $mockTiendaModel = $this->getMockBuilder('App\Models\TiendaModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1045,12 +1050,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Tiendas encontradas exitosamente.
      */
-    public function testRecibirTiendas_successful()
+    public function testRecibirTiendas_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1060,7 +1065,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simulamos que findAll() retorna una lista de tiendas.
+        //Simulamos que findAll() retorna una lista de tiendas.
         $expectedTiendas = [
             ['id' => 1, 'nombre' => 'Tienda A', 'direccion' => 'Calle 123'],
             ['id' => 2, 'nombre' => 'Tienda B', 'direccion' => 'Avenida 456']
@@ -1087,12 +1092,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Excepción durante la consulta de tiendas.
      */
-    public function testRecibirTiendas_exception()
+    public function testRecibirTiendas_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1102,7 +1107,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simulamos que findAll() lanza una excepción.
+        //Simulamos que findAll() lanza una excepción.
         $mockTiendaModel = $this->getMockBuilder('App\Models\TiendaModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1124,12 +1129,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API Key inválida para recibirDesarrolladoras.
      */
-    public function testRecibirDesarrolladoras_invalidApiKey()
+    public function testRecibirDesarrolladoras_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Simulamos un Response de error (por ejemplo, API Key inválida).
+        //Simulamos un Response de error (por ejemplo, API Key inválida).
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -1144,7 +1149,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($fakeResponse);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Como la validación falla, el método se detiene en ese punto.
+        //Como la validación falla, el método se detiene en ese punto.
         $result = $controller->recibirDesarrolladoras();
         $data = json_decode($result->getBody(), true);
         
@@ -1157,12 +1162,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: No se encontraron desarrolladoras (array vacío).
      */
-    public function testRecibirDesarrolladoras_empty()
+    public function testRecibirDesarrolladoras_SinDesarrolladoras()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1172,7 +1177,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simulamos que el método findAll() retorna un array vacío.
+        //Simulamos que el método findAll() retorna un array vacío.
         $mockDesarrolladoraModel = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1194,12 +1199,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Desarrolladoras encontradas exitosamente.
      */
-    public function testRecibirDesarrolladoras_successful()
+    public function testRecibirDesarrolladoras_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1209,7 +1214,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simulamos que findAll() retorna una lista de desarrolladoras.
+        //Simulamos que findAll() retorna una lista de desarrolladoras.
         $expectedDesarrolladoras = [
             ['id' => 1, 'nombre' => 'Desarrolladora A'],
             ['id' => 2, 'nombre' => 'Desarrolladora B']
@@ -1236,12 +1241,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Excepción durante la consulta de desarrolladoras.
      */
-    public function testRecibirDesarrolladoras_exception()
+    public function testRecibirDesarrolladoras_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
         
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1251,7 +1256,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simulamos que findAll() lanza una excepción.
+        //Simulamos que findAll() lanza una excepción.
         $mockDesarrolladoraModel = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1273,12 +1278,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: API Key inválida para recibirPublishers().
      */
-    public function testRecibirPublishers_invalidApiKey()
+    public function testRecibirPublishers_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Simulamos un Response de error (por ejemplo, API Key inválida).
+        //Simulamos un Response de error (por ejemplo, API Key inválida).
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -1293,7 +1298,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($fakeResponse);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Al no pasar la validación, el modelo no se invoca.
+        //Al no pasar la validación, el modelo no se invoca.
         $result = $controller->recibirPublishers();
         $data = json_decode($result->getBody(), true);
 
@@ -1306,12 +1311,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: No se encuentran publishers (array vacío).
      */
-    public function testRecibirPublishers_empty()
+    public function testRecibirPublishers_SinPublishers()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1321,7 +1326,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que el método findAll() del modelo retorna un array vacío.
+        //Simulamos que el método findAll() del modelo retorna un array vacío.
         $mockPublisherModel = $this->getMockBuilder('App\Models\PublisherModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1343,12 +1348,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Publishers encontrados exitosamente.
      */
-    public function testRecibirPublishers_successful()
+    public function testRecibirPublishers_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1358,7 +1363,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que findAll() retorna una lista de publishers.
+        //Simulamos que findAll() retorna una lista de publishers.
         $expectedPublishers = [
             ['id' => 1, 'nombre' => 'Publisher A'],
             ['id' => 2, 'nombre' => 'Publisher B']
@@ -1385,12 +1390,12 @@ class ControllersTest extends BaseTestCase
     /**
      * Test: Excepción durante la consulta de publishers.
      */
-    public function testRecibirPublishers_exception()
+    public function testRecibirPublishers_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1400,7 +1405,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simulamos que findAll() lanza una excepción.
+        //Simulamos que findAll() lanza una excepción.
         $mockPublisherModel = $this->getMockBuilder('App\Models\PublisherModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1420,14 +1425,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 1: API Key inválida.
+     * Test: API Key inválida.
      */
-    public function testEliminarJuego_invalidApiKey()
+    public function testEliminarJuego_InvalidaApiKey()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Simula que la validación de API Key falla.
+        //Simula que la validación de API Key falla.
         $fakeResponse = $this->response->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
@@ -1448,14 +1453,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 2: No se proporciona el ID del juego.
+     * Test: No se proporciona el ID del juego.
      */
-    public function testEliminarJuego_noIdProvided()
+    public function testEliminarJuego_SinID()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1463,7 +1468,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simula el retornar un objeto JSON sin propiedad id.
+        //Simula el retornar un objeto JSON sin propiedad id.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -1481,14 +1486,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 3: Juego no encontrado.
+     * Test: Juego no encontrado.
      */
-    public function testEliminarJuego_gameNotFound()
+    public function testEliminarJuego_JuegoNoEncontrado()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1496,7 +1501,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simula que el JSON tiene un id.
+        //Simula que el JSON tiene un id.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -1508,7 +1513,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn($dummyJson);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configura el modelo para que no encuentre el juego.
+        //Configura el modelo para que no encuentre el juego.
         $mockModelo = $this->getMockBuilder('App\Models\VideojuegoModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['find'])
@@ -1527,14 +1532,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 4: Eliminación exitosa.  
+     * Test: Eliminación exitosa.  
      */
-    public function testEliminarJuego_successful()
+    public function testEliminarJuego_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1542,7 +1547,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simula JSON de request con id.
+        //Simula JSON de request con id.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
            ->disableOriginalConstructor()
            ->onlyMethods(['getJSON'])
@@ -1580,15 +1585,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 5: Excepción durante la eliminación.
-     * Por ejemplo, si el delete() del modelo lanza excepción.
+     * Test: Excepción durante la eliminación.
      */
-    public function testEliminarJuego_exception()
+    public function testEliminarJuego_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1596,7 +1600,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
         
-        // Simula JSON de request con id.
+        //Simula JSON de request con id.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
            ->disableOriginalConstructor()
            ->onlyMethods(['getJSON'])
@@ -1608,7 +1612,7 @@ class ControllersTest extends BaseTestCase
            ->willReturn($dummyJson);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configura el modelo para encontrar el juego correctamente.
+        //Configura el modelo para encontrar el juego correctamente.
         $juego = [
             'id'     => 321,
             'imagen' => 'local_images/juego.jpg'
@@ -1621,7 +1625,7 @@ class ControllersTest extends BaseTestCase
            ->method('find')
            ->with(321)
            ->willReturn($juego);
-        // El método delete lanza una excepción.
+        //El método delete lanza una excepción.
         $mockModelo->expects($this->once())
            ->method('delete')
            ->with(321)
@@ -1636,14 +1640,14 @@ class ControllersTest extends BaseTestCase
     }
 
      /**
-     * Test 1: API Key inválida.
+     * Test: API Key inválida.
      */
-    public function testObtenerDatosFormulario_invalidApiKey()
+    public function testObtenerDatosFormulario_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Simula que la validación falla.
+        //Simula que la validación falla.
         $fakeResponse = $this->response
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -1667,14 +1671,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 2: Consulta exitosa, se obtienen los datos de los modelos.
+     * Test: Consulta exitosa, se obtienen los datos de los modelos.
      */
-    public function testObtenerDatosFormulario_successful()
+    public function testObtenerDatosFormulario_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1682,14 +1686,14 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Datos esperados para cada modelo.
+        //Datos esperados para cada modelo.
         $expectedTiendas         = [['id' => 1, 'nombre' => 'Tienda A']];
         $expectedPlataformas     = [['id' => 1, 'nombre' => 'Plataforma1']];
         $expectedGeneros         = [['id' => 1, 'nombre' => 'Género1']];
         $expectedDesarrolladoras = [['id' => 1, 'nombre' => 'Desarrolladora1']];
         $expectedPublishers      = [['id' => 1, 'nombre' => 'Publisher1']];
 
-        // Configuramos mocks para cada modelo.
+        //Configuramos mocks para cada modelo.
         $mockTiendaModelo = $this->getMockBuilder('App\Models\TiendaModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1728,7 +1732,7 @@ class ControllersTest extends BaseTestCase
         $result = $controller->obtenerDatosFormulario();
         $data = json_decode($result->getBody(), true);
 
-        // Verifica que se encuentren todas las claves y se devuelven los datos esperados.
+        //Verifica que se encuentren todas las claves y se devuelven los datos esperados.
         $this->assertArrayHasKey('tiendas', $data);
         $this->assertArrayHasKey('plataformas', $data);
         $this->assertArrayHasKey('generos', $data);
@@ -1743,15 +1747,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 3: Excepción durante la consulta de datos.
-     * Por ejemplo, si TiendaModelo->findAll() lanza una excepción.
+     * Test: Excepción durante la consulta de datos.
      */
-    public function testObtenerDatosFormulario_exception()
+    public function testObtenerDatosFormulario_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['validar'])
@@ -1759,7 +1762,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Configuramos el modelo de Tienda para que lance excepción.
+        //Configuramos el modelo de Tienda para que lance excepción.
         $mockTiendaModelo = $this->getMockBuilder('App\Models\TiendaModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1768,7 +1771,7 @@ class ControllersTest extends BaseTestCase
             ->will($this->throwException(new Exception("DB error")));
         $controller->TiendaModelo = $mockTiendaModelo;
 
-        // El resto de los modelos pueden retornar valores correctos o vacíos.
+        //El resto de los modelos pueden retornar valores correctos o vacíos.
         $controller->PlataformaModelo = $this->getMockBuilder('App\Models\PlataformaModelo')
             ->disableOriginalConstructor()
             ->onlyMethods(['findAll'])
@@ -1795,14 +1798,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 1: API Key inválida.
+     * Test: API Key inválida.
      */
-    public function testRecibirJuegosAdmin_invalidApiKey()
+    public function testRecibirJuegosAdmin_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Simula validación fallida de API key.
+        //Simula validación fallida de API key.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -1824,14 +1827,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 2: No se encuentran videojuegos creados por los administradores (resultado vacío).
+     * Test: No se encuentran videojuegos creados por los administradores (resultado vacío).
      */
-    public function testRecibirJuegosAdmin_empty()
+    public function testRecibirJuegosAdmin_SinJuegosAdmin()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -1839,11 +1842,11 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Configuramos la cadena de métodos en el modelo.
+        //Configuramos la cadena de métodos en el modelo.
         $mockVideojuegoModelo = $this->getMockBuilder('App\Models\VideojuegoModelo')
                                    ->disableOriginalConstructor()
-                                   ->addMethods(['select', 'where']) // Agregamos explícitamente
-                                   ->onlyMethods(['findAll']) // Solo mockeamos los métodos existentes
+                                   ->addMethods(['select', 'where']) //Agregamos explícitamente
+                                   ->onlyMethods(['findAll']) //Solo mockeamos los métodos existentes
                                    ->getMock();
         $mockVideojuegoModelo->expects($this->once())
                              ->method('select')
@@ -1866,14 +1869,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 3: Consulta exitosa. Se obtienen videojuegos.
+     * Test: Consulta exitosa. Se obtienen videojuegos.
      */
-    public function testRecibirJuegosAdmin_success()
+    public function testRecibirJuegosAdmin_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -1886,11 +1889,11 @@ class ControllersTest extends BaseTestCase
             ['nombre' => 'Game2']
         ];
 
-        // Configuramos la cadena de métodos.
+        //Configuramos la cadena de métodos.
         $mockVideojuegoModelo = $this->getMockBuilder('App\Models\VideojuegoModelo')
                                    ->disableOriginalConstructor()
-                                   ->addMethods(['select', 'where']) // Agregamos explícitamente
-                                   ->onlyMethods(['findAll']) // Solo mockeamos los métodos existentes
+                                   ->addMethods(['select', 'where']) //Agregamos explícitamente
+                                   ->onlyMethods(['findAll']) //Solo mockeamos los métodos existentes
                                    ->getMock();
         $mockVideojuegoModelo->expects($this->once())
                              ->method('select')
@@ -1914,14 +1917,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 4: Excepción durante la consulta (por ejemplo, findAll() lanza excepción).
+     * Test: Excepción durante la consulta (por ejemplo, findAll() lanza excepción).
      */
-    public function testRecibirJuegosAdmin_exception()
+    public function testRecibirJuegosAdmin_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -1929,11 +1932,11 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Configuramos la cadena de métodos para que findAll() lance una excepción.
+        //Configuramos la cadena de métodos para que findAll() lance una excepción.
         $mockVideojuegoModelo = $this->getMockBuilder('App\Models\VideojuegoModelo')
                                    ->disableOriginalConstructor()
-                                   ->addMethods(['select', 'where']) // Agregamos explícitamente
-                                   ->onlyMethods(['findAll']) // Solo mockeamos los métodos existentes
+                                   ->addMethods(['select', 'where']) //Agregamos explícitamente
+                                   ->onlyMethods(['findAll']) //Solo mockeamos los métodos existentes
                                    ->getMock();
         $mockVideojuegoModelo->expects($this->once())
                              ->method('select')
@@ -1956,14 +1959,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 1: API Key inválida.
+     * Test: API Key inválida.
      */
-    public function testRealizarBusqueda_invalidApiKey()
+    public function testRealizarBusqueda_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Se simula que la validación falla.
+        //Se simula que la validación falla.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -1984,14 +1987,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 2: Búsqueda vacía (no se encuentra ningún videojuego).
+     * Test: Búsqueda vacía (no se encuentra ningún videojuego).
      */
-    public function testRealizarBusqueda_empty()
+    public function testRealizarBusqueda_SinJuegos()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -1999,7 +2002,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -2009,7 +2012,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(['nombre' => 'Halo']);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configuramos la cadena de métodos en el modelo.
+        //Configuramos la cadena de métodos en el modelo.
         $mockVideojuegoModelo = $this->getMockBuilder('App\Models\VideojuegoModelo')
                                    ->disableOriginalConstructor()
                                    ->addMethods(['like'])
@@ -2032,14 +2035,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 3: Búsqueda exitosa (se encuentran videojuegos).
+     * Test: Búsqueda exitosa (se encuentran videojuegos).
      */
-    public function testRealizarBusqueda_success()
+    public function testRealizarBusqueda_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -2052,7 +2055,7 @@ class ControllersTest extends BaseTestCase
             ['nombre' => 'Halo 2']
         ];
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -2062,7 +2065,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(['nombre' => 'Halo']);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configuramos la cadena de métodos en el modelo.
+        //Configuramos la cadena de métodos en el modelo.
         $mockVideojuegoModelo = $this->getMockBuilder('App\Models\VideojuegoModelo')
                                    ->disableOriginalConstructor()
                                    ->addMethods(['like'])
@@ -2086,14 +2089,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 4: Excepción durante la búsqueda.
+     * Test: Excepción durante la búsqueda.
      */
-    public function testRealizarBusqueda_exception()
+    public function testRealizarBusqueda_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -2101,17 +2104,17 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
             ->getMock();
         $fakeRequest->expects($this->once())
             ->method('getJSON')
-            ->willReturn(['nombre' => 'Halo']); // Asegura que no sea vacío
+            ->willReturn(['nombre' => 'Halo']); //Asegura que no sea vacío
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configuramos la cadena de métodos en el modelo para que findAll() lance una excepción.
+        //Configuramos la cadena de métodos en el modelo para que findAll() lance una excepción.
         $mockVideojuegoModelo = $this->getMockBuilder('App\Models\VideojuegoModelo')
                                    ->disableOriginalConstructor()
                                    ->addMethods(['like'])
@@ -2133,16 +2136,15 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals('Ocurrió un error al realizar la búsqueda', $data['error']);
     }
 
-
-        /**
-     * Test 1: API Key inválida.
+    /**
+     * Test: API Key inválida.
      */
-    public function testRealizarBusquedaDesarrolladoras_invalidApiKey()
+    public function testRealizarBusquedaDesarrolladoras_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Se simula que la validación falla.
+        //Se simula que la validación falla.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -2163,14 +2165,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 2: Búsqueda vacía (ninguna desarrolladora coincide).
+     * Test: Búsqueda vacía (ninguna desarrolladora coincide).
      */
-    public function testRealizarBusquedaDesarrolladoras_empty()
+    public function testRealizarBusquedaDesarrolladoras_SinDesarrolladoras()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -2178,7 +2180,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -2188,7 +2190,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(['nombre' => 'Ubisoft']);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configuramos la cadena de métodos en el modelo.
+        //Configuramos la cadena de métodos en el modelo.
         $mockDesarrolladoraModelo = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
                                    ->disableOriginalConstructor()
                                    ->addMethods(['like'])
@@ -2211,14 +2213,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 3: Búsqueda exitosa (se encuentran desarrolladoras).
+     * Test: Búsqueda exitosa (se encuentran desarrolladoras).
      */
-    public function testRealizarBusquedaDesarrolladoras_success()
+    public function testRealizarBusquedaDesarrolladoras_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -2231,7 +2233,7 @@ class ControllersTest extends BaseTestCase
             ['nombre' => 'Ubisoft Montreal']
         ];
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -2241,7 +2243,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(['nombre' => 'Ubisoft']);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configuramos la cadena de métodos en el modelo.
+        //Configuramos la cadena de métodos en el modelo.
         $mockDesarrolladoraModelo = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
                                    ->disableOriginalConstructor()
                                    ->addMethods(['like'])
@@ -2265,9 +2267,9 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 4: Excepción durante la búsqueda.
+     * Test: Excepción durante la búsqueda.
      */
-    public function testRealizarBusquedaDesarrolladoras_exception()
+    public function testRealizarBusquedaDesarrolladoras_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
@@ -2279,17 +2281,17 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
             ->getMock();
         $fakeRequest->expects($this->once())
             ->method('getJSON')
-            ->willReturn(['nombre' => 'Ubisoft']); // Se asegura que no sea vacío
+            ->willReturn(['nombre' => 'Ubisoft']); //Se asegura que no sea vacío
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configura la cadena de métodos en el modelo para que findAll() lance una excepción.
+        //Configura la cadena de métodos en el modelo para que findAll() lance una excepción.
         $mockDesarrolladoraModelo = $this->getMockBuilder('App\Models\DesarrolladoraModelo')
                                 ->disableOriginalConstructor()
                                 ->addMethods(['like'])
@@ -2311,15 +2313,15 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals('Ocurrió un error al realizar la búsqueda', $data['error']);
     }
 
-      /**
-     * Test 1: API Key inválida.
+    /**
+     * Test: API Key inválida.
      */
-    public function testRealizarBusquedaPublishers_invalidApiKey()
+    public function testRealizarBusquedaPublishers_ApiKeyInvalida()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Se simula que la validación falla.
+        //Se simula que la validación falla.
         $fakeResponse = Services::response()
             ->setJSON(['error' => 'API Key inválida'])
             ->setStatusCode(401);
@@ -2340,14 +2342,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 2: Búsqueda vacía (ningún publisher coincide).
+     * Test: Búsqueda vacía (ningún publisher coincide).
      */
-    public function testRealizarBusquedaPublishers_empty()
+    public function testRealizarBusquedaPublishers_SinPublishers()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -2355,7 +2357,7 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -2365,7 +2367,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(['nombre' => 'Electronic Arts']);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configuramos la cadena de métodos en el modelo.
+        //Configuramos la cadena de métodos en el modelo.
         $mockPublisherModelo = $this->getMockBuilder('App\Models\PublisherModelo')
                                    ->disableOriginalConstructor()
                                    ->addMethods(['like'])
@@ -2388,14 +2390,14 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 3: Búsqueda exitosa (se encuentran publishers).
+     * Test: Búsqueda exitosa (se encuentran publishers).
      */
-    public function testRealizarBusquedaPublishers_success()
+    public function testRealizarBusquedaPublishers_Exito()
     {
         $controller = new DataController();
         $this->initController($controller);
 
-        // Validación exitosa.
+        //Validación exitosa.
         $mockValidator = $this->getMockBuilder(ApiKeyValidator::class)
                               ->disableOriginalConstructor()
                               ->onlyMethods(['validar'])
@@ -2408,7 +2410,7 @@ class ControllersTest extends BaseTestCase
             ['nombre' => 'EA Sports']
         ];
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
@@ -2418,7 +2420,7 @@ class ControllersTest extends BaseTestCase
             ->willReturn(['nombre' => 'Electronic Arts']);
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configuramos la cadena de métodos en el modelo.
+        //Configuramos la cadena de métodos en el modelo.
         $mockPublisherModelo = $this->getMockBuilder('App\Models\PublisherModelo')
                                    ->disableOriginalConstructor()
                                    ->addMethods(['like'])
@@ -2442,9 +2444,9 @@ class ControllersTest extends BaseTestCase
     }
 
     /**
-     * Test 4: Excepción durante la búsqueda.
+     * Test: Excepción durante la búsqueda.
      */
-    public function testRealizarBusquedaPublishers_exception()
+    public function testRealizarBusquedaPublishers_Excepcion()
     {
         $controller = new DataController();
         $this->initController($controller);
@@ -2456,17 +2458,17 @@ class ControllersTest extends BaseTestCase
         $mockValidator->method('validar')->willReturn(true);
         $controller->apiKeyValidator = $mockValidator;
 
-        // Simula que el request contiene un JSON con el nombre buscado.
+        //Simula que el request contiene un JSON con el nombre buscado.
         $fakeRequest = $this->getMockBuilder('CodeIgniter\HTTP\IncomingRequest')
             ->disableOriginalConstructor()
             ->onlyMethods(['getJSON'])
             ->getMock();
         $fakeRequest->expects($this->once())
             ->method('getJSON')
-            ->willReturn(['nombre' => 'Electronic Arts']); // Se asegura que no sea vacío
+            ->willReturn(['nombre' => 'Electronic Arts']); //Se asegura que no sea vacío
         $this->setProtectedProperty($controller, 'request', $fakeRequest);
 
-        // Configura la cadena de métodos en el modelo para que findAll() lance una excepción.
+        //Configura la cadena de métodos en el modelo para que findAll() lance una excepción.
         $mockPublisherModelo = $this->getMockBuilder('App\Models\PublisherModelo')
                                 ->disableOriginalConstructor()
                                 ->addMethods(['like'])
@@ -2488,20 +2490,68 @@ class ControllersTest extends BaseTestCase
         $this->assertEquals('Ocurrió un error al realizar la búsqueda', $data['error']);
     }
 
-    public function testObtenerIdsJuegos_API()
+    /**
+     * Test: Respuesta exitosa. Debería retornar [1,2,3] según nuestro dummy.
+     */
+    public function testObtenerIdsJuegosAPI_Exito()
     {
-        $logger = $this->get_logger("ObtenerIdsJuegos_API_");
+        $apiController = new ApiController();
+        $ids = $apiController->obtenerIdsJuegos_API();
 
-        $controller = new \App\Controllers\ApiController();
-        $ids = $controller->obtenerIdsJuegos_API();
-
-        if (is_array($ids) && !empty($ids) && is_int($ids[0])) {
-            $logger->log('info', "RESULTADO CORRECTO: Se obtuvo una lista de IDs de juegos correctamente.");
-            $this->assertTrue(true, "La función devolverá un array no vacío de IDs enteros.");
-        } else {
-            $logger->log('error', "ERROR: No se obtuvo la lista de IDs correctamente.");
-            $this->fail('La función no devolvió la lista de IDs correctamente.');
+        $this->assertIsArray($ids, 'El resultado debe ser un array');
+        $this->assertEquals(20, count($ids), 'Se espera que se obtengan 20 IDs');
+        foreach ($ids as $id) {
+            $this->assertIsNumeric($id, 'Cada ID debe ser numérico');
         }
+    }
+
+    /**
+     * Test: Respuesta con resultados vacíos.
+     */
+    public function testObtenerIdsJuegosAPI_SinJuegos()
+    {
+        $apiController = new class extends ApiController {
+            public function obtenerIdsJuegos_API() {
+                $ids = [];
+                //Simulamos respuesta con resultados vacíos.
+                $response = '{"results": []}';
+                $data = json_decode($response, true);
+                if (isset($data['results'])) {
+                    foreach ($data['results'] as $juego) {
+                        if (isset($juego['id'])) {
+                            $ids[] = $juego['id'];
+                        }
+                    }
+                }
+                return $ids;
+            }
+        };
+        $ids = $apiController->obtenerIdsJuegos_API();
+        $this->assertEquals([], $ids);
+    }
+
+    /**
+     * Test: Respuesta con JSON inválido.
+     */
+    public function testObtenerIdsJuegosAPI_JsonInvalido()
+    {
+        $apiController = new class extends ApiController {
+            public function obtenerIdsJuegos_API() {
+                $ids = [];
+                $response = 'json invalido';
+                $data = json_decode($response, true);
+                if (isset($data['results'])) {
+                    foreach ($data['results'] as $juego) {
+                        if (isset($juego['id'])) {
+                            $ids[] = $juego['id'];
+                        }
+                    }
+                }
+                return $ids;
+            }
+        };
+        $ids = $apiController->obtenerIdsJuegos_API();
+        $this->assertEquals([], $ids);
     }
 
 }

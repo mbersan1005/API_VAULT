@@ -1,0 +1,140 @@
+ERROR - 2025-06-05 08:15:25 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 08:15:28 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 08:15:33 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 08:15:35 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 08:15:38 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 08:15:41 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 08:15:45 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 08:15:48 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 08:15:51 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 08:15:54 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 08:15:57 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 08:16:00 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 08:16:03 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 08:16:06 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 08:25:09 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 08:25:12 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 08:25:17 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 08:25:20 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 08:25:23 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 08:25:26 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 08:25:29 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 08:25:32 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 08:25:36 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 08:25:39 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 08:25:42 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 08:25:45 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 08:25:48 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 08:25:51 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 08:27:34 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 08:27:37 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 08:27:41 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 08:27:44 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 08:27:47 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 08:27:50 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 08:27:52 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 08:27:55 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 08:27:58 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 08:28:00 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 08:28:03 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 08:28:06 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 08:28:08 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 08:28:11 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 08:53:23 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 08:53:26 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 08:53:31 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 08:53:34 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 08:53:37 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 08:53:40 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 08:53:43 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 08:53:46 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 08:53:50 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 08:53:53 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 08:53:56 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 08:53:59 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 08:54:02 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 08:54:05 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 08:57:57 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 08:58:00 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 08:58:05 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 08:58:08 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 08:58:11 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 08:58:14 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 08:58:17 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 08:58:20 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 08:58:24 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 08:58:26 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 08:58:30 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 08:58:33 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 08:58:36 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 08:58:39 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 09:16:06 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 09:16:09 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 09:16:13 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 09:16:15 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 09:16:18 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 09:16:21 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 09:16:23 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 09:16:26 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 09:16:29 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 09:16:31 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 09:16:33 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 09:16:36 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 09:16:39 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 09:16:42 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 10:19:26 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 10:19:29 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 10:19:34 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 10:19:37 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 10:19:40 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 10:19:43 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 10:19:46 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 10:19:49 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 10:19:53 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 10:19:56 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 10:19:59 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 10:20:02 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 10:20:05 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 10:20:08 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 10:27:03 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 10:27:07 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 10:27:12 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 10:27:15 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 10:27:19 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 10:27:22 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 10:27:25 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 10:27:29 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 10:27:33 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 10:27:36 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 10:27:40 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 10:27:43 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 10:27:46 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 10:27:50 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 10:30:32 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 10:30:35 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 10:30:39 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 10:30:42 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 10:30:45 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 10:30:48 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 10:30:51 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 10:30:53 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 10:30:58 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 10:31:00 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 10:31:03 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 10:31:06 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 10:31:09 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 10:31:12 --> Error al buscar publishers: DB error
+ERROR - 2025-06-05 10:55:33 --> Error al obtener juegos: Database error
+ERROR - 2025-06-05 10:55:36 --> Error al obtener el juego con ID 1: Database failure
+ERROR - 2025-06-05 10:55:40 --> Error en inicioSesion: DB error
+ERROR - 2025-06-05 10:55:44 --> Error al obtener géneros: DB error
+ERROR - 2025-06-05 10:55:47 --> Error al obtener plataformas: DB error
+ERROR - 2025-06-05 10:55:50 --> Error al obtener tiendas: DB error
+ERROR - 2025-06-05 10:55:53 --> Error al obtener desarrolladoras: DB error
+ERROR - 2025-06-05 10:55:56 --> Error al obtener publishers: DB error
+ERROR - 2025-06-05 10:56:00 --> Error al eliminar juego: Deletion error
+ERROR - 2025-06-05 10:56:02 --> Error al obtener datos del formulario: DB error
+ERROR - 2025-06-05 10:56:06 --> Error al obtener juegos administrados: DB error
+ERROR - 2025-06-05 10:56:09 --> Error al realizar la búsqueda: DB error
+ERROR - 2025-06-05 10:56:12 --> Error al buscar desarrolladoras: DB error
+ERROR - 2025-06-05 10:56:15 --> Error al buscar publishers: DB error
